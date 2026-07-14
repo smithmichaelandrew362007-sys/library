@@ -371,6 +371,7 @@ body {
 .main-content {
     margin-left: var(--sidebar-width);
     flex: 1;
+    min-width: 0; /* Fix flex child overflowing and causing mobile zoom-out */
     min-height: 100vh;
     transition: var(--transition);
 }
@@ -1880,4 +1881,10 @@ select option, .filter-select option {
     background-position: right center;
     box-shadow: 0 5px 20px rgba(var(--accent-primary-rgb), 0.5);
     transform: translateY(-2px);
+}
+
+
+/* Table mobile fix */
+.table th, .table td {
+    white-space: nowrap;
 }
