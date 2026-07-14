@@ -1,0 +1,47 @@
+Project Development & Debugging Log
+===================================
+Project: LibraVault - Library Management System
+Target Environments: Local Desktop (Electron) & Web Deployment (Vercel)
+
+This document summarizes all the major debugging steps, architectural fixes, and UI improvements implemented to stabilize the application and ensure cross-platform responsiveness.
+
+1. Resolving the "Black Screen" Electron App Failure
+----------------------------------------------------
+Issue: The Electron desktop app failed to render the user interface, showing only a perfectly black screen with the title "Login —".
+Root Cause: The internal Chromium Quota Database (which handles ServiceWorkers and caching) was deeply corrupted on the host Windows environment. This caused the startup initialization code (specifically `clearStorageData` and `caches.match`) to hang infinitely, stalling the HTML parser and preventing the UI from rendering.
+Solutions Implemented:
+- Cache API Bypass: Completely rewrote `static/sw.js` to bypass the Cache API and forward all network requests directly to `fetch()`, avoiding the broken Quota Database.
+- Removed Registration: Deleted the Service Worker registration code from `static/js/app.js` to prevent it from spinning up.
+- Pristine Profile: Bumped the Electron user data directory in `electron/main.js` from `LibraVaultApp_v1` to `LibraVaultApp_v2` to force a completely fresh database instance without old corrupted data.
+- Hardware Acceleration Disabled: Added `app.disableHardwareAcceleration()` to `electron/main.js` to prevent blank screens caused by GPU compositing failures on certain Windows drivers or VMs.
+- Removed Startup Hang: Removed `clearStorageData` from the Electron boot sequence to ensure the window loads instantly.
+
+2. Full Offline Capability & Asset Migration
+--------------------------------------------
+Issue: The Electron app required an internet connection to render the UI structure properly because of external CDNs.
+Root Cause: `base.html` relied on external links for Bootstrap, FontAwesome, Chart.js, and Google Fonts.
+Solutions Implemented:
+- Downloaded `bootstrap.min.css`, `bootstrap.bundle.min.js`, `chart.umd.min.js`, `jspdf.umd.min.js`, and `jspdf.plugin.autotable.min.js` into the `static/vendor/` folder.
+- Replaced Google Fonts with native system fonts in `base.html`.
+- Updated all links in `base.html` to load from the local vendor directory, ensuring 100% offline capability.
+
+3. Fixing Missing Icons (FontAwesome)
+-------------------------------------
+Issue: After moving to local vendor files, UI icons (emojis/glyphs) were rendering as empty squares on both the desktop app and Vercel.
+Root Cause: We downloaded the FontAwesome CSS file, but missed the physical font files (`.woff2` and `.ttf`) that actually draw the icons.
+Solutions Implemented:
+- Downloaded the FontAwesome Webfonts (Solid, Regular, Brands) into `static/webfonts/`.
+- Committed the new binary font files to the Git repository, instantly resolving the missing icons across all devices.
+
+4. Mobile Responsiveness & "Zoom Out" Layout Bug Fix
+----------------------------------------------------
+Issue: On mobile phones, the webpage appeared zoomed out ("laptop ratio"), with tiny text and squished table columns.
+Root Cause: A classic Flexbox sizing bug. The `.main-content` layout wrapper was set to `display: flex; flex: 1;`. Because the data tables inside it were wide, the flex child refused to shrink below the table's minimum content width, forcing the entire page to expand beyond the phone screen width and triggering the mobile browser to zoom out.
+Solutions Implemented:
+- Flexbox Shrink Fix: Added `min-width: 0;` to `.main-content` in `style.css`. This CSS rule forces the flex container to shrink to the screen size properly.
+- Table Readability: Added `white-space: nowrap;` to all table headers and cells. This stops the text from squishing unreadably on small screens and instead forces the `.table-responsive` wrapper to elegantly scroll left and right.
+
+5. Deployment Automation
+------------------------
+- Continuously pushed all patches and fixes to the `main` branch of the GitHub repository.
+- Allowed Vercel to automatically rebuild and deploy the fixes seamlessly for end users viewing `college-library-tau.vercel.app`.
