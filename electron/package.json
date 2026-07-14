@@ -1,0 +1,8 @@
+{
+  "name": "libravault-electron",
+  "version": "1.0.0",
+  "description": "LibraVault Electron wrapper",
+  "main": "main.js",
+  "author": "LibraVault",
+  "license": "MIT"
+}

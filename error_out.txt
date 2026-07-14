@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="LibraVault — Smart Library Management System for colleges and institutions">
+    <title>Sign Up — </title>
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('libravault_theme') || 'black';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        })();
+    </script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Font Awesome 6 -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+    <!-- jsPDF for PDF export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    
+    <!-- ─── Sidebar ─────────────────────────────────────────── -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <a href="/" class="logo" style="text-decoration: none; color: inherit;">
+                <i class="fas fa-book-open"></i>
+                <span class="logo-text"></span>
+            </a>
+            <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle sidebar">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+
+        <nav class="sidebar-nav">
+            
+            <a href="/books" class="nav-item " id="nav-books">
+                <i class="fas fa-book"></i>
+                <span>Browse Catalog</span>
+            </a>
+            <a href="/my-books" class="nav-item " id="nav-mybooks">
+                <i class="fas fa-bookmark"></i>
+                <span>My Books</span>
+            </a>
+            
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="user-card">
+                <div class="user-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="user-info">
+                    <span class="user-name"></span>
+                    <span class="user-role"></span>
+                </div>
+            </div>
+            <a href="/logout" class="nav-item logout-btn" id="nav-logout">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- ─── Main Content ────────────────────────────────────── -->
+    <main class="main-content" id="mainContent">
+        <!-- Top Bar -->
+        <header class="top-bar">
+            <button class="mobile-toggle" id="mobileToggle" aria-label="Toggle menu">
+                <i class="fas fa-bars"></i>
+            </button>
+            <h1 class="page-title">Dashboard</h1>
+            <div class="top-bar-actions" style="display: flex; align-items: center; gap: 15px;">
+                <div class="theme-switcher" style="display: flex; gap: 8px;">
+                    <button type="button" class="theme-btn" data-set-theme="black" style="width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--border-color); background-color: #0a0e17; cursor: pointer;" title="Black Theme"></button>
+                    <button type="button" class="theme-btn" data-set-theme="white" style="width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--border-color); background-color: #f8fafc; cursor: pointer;" title="White Theme"></button>
+                    <button type="button" class="theme-btn" data-set-theme="earthy" style="width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--border-color); background-color: #2d2a26; cursor: pointer;" title="Earthy Theme"></button>
+                </div>
+                <span class="date-display">
+                    <i class="far fa-calendar-alt"></i>
+                    <span id="currentDate"></span>
+                </span>
+            </div>
+        </header>
+
+        <!-- Page Content -->
+        <div class="content-wrapper">
+            
+<div class="login-container">
+    <div class="login-card">
+        <div class="login-header">
+            <div class="logo-icon">
+                <i class="fas fa-book-open"></i>
+            </div>
+            <h1>Create Account</h1>
+            <p>Join the Library Management System</p>
+        </div>
+
+        <div class="login-body">
+            
+                
+                    
+                        <div class="alert alert-danger">
+                            <i class="fas fa-check-circle"></i>
+                            Roll number or username already exists
+                        </div>
+                    
+                
+            
+
+            <!-- Register Form -->
+            <form id="registerForm" class="login-form" method="POST" action="/register">
+                
+                <div class="form-group">
+                    <label for="name" class="form-label"><i class="fas fa-id-badge"></i> Full Name</label>
+                    <input type="text" class="form-control glass-input" id="name" name="name"
+                           placeholder="Enter your full name" required>
+                </div>
+
+                <div class="form-row" style="display: flex; gap: 1rem;">
+                    <div class="form-group" style="flex: 1;">
+                        <label for="roll_no" class="form-label"><i class="fas fa-hashtag"></i> Roll No</label>
+                        <input type="text" class="form-control glass-input" id="roll_no" name="roll_no"
+                               placeholder="e.g. 101" required>
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label for="username" class="form-label"><i class="fas fa-user"></i> Username</label>
+                        <input type="text" class="form-control glass-input" id="username" name="username"
+                               placeholder="Choose username" required autocomplete="username">
+                    </div>
+                </div>
+
+                <div class="form-row" style="display: flex; gap: 1rem;">
+                    <div class="form-group" style="flex: 1;">
+                        <label for="department" class="form-label"><i class="fas fa-building"></i> Department</label>
+                        <input type="text" class="form-control glass-input" id="department" name="department"
+                               placeholder="e.g. CS">
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label for="year" class="form-label"><i class="fas fa-calendar-alt"></i> Year</label>
+                        <input type="text" class="form-control glass-input" id="year" name="year"
+                               placeholder="e.g. 2nd">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="contact" class="form-label"><i class="fas fa-phone"></i> Mobile Number</label>
+                    <input type="text" class="form-control glass-input" id="contact" name="contact"
+                           placeholder="e.g. 9876543210">
+                </div>
+
+
+
+                <button type="submit" class="btn btn-primary btn-login" id="registerBtn">
+                    <span class="btn-text">Sign Up</span>
+                    <span class="btn-loader" style="display: none;">
+                        <i class="fas fa-spinner fa-spin"></i>
+                    </span>
+                </button>
+                <div class="auth-switch">
+                    <p>Already have an account? <a href="/login">Sign in</a></p>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+
+        </div>
+    </main>
+    
+
+    <!-- ─── Toast Container ─────────────────────────────────── -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- App JS -->
+    <script src="/static/js/app.js"></script>
+
+    
+</body>
+</html>

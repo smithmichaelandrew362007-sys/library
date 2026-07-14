@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard — {{ app_name }}{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<!-- Stats Cards Row -->
+<div class="stats-row" id="statsRow">
+    <div class="stat-card glass-card" id="stat-books" style="cursor: pointer;" onclick="window.location.href='/books'">
+        <div class="stat-icon" style="--accent: #6c5ce7;">
+            <i class="fas fa-book"></i>
+        </div>
+        <div class="stat-info">
+            <span class="stat-value" id="totalBooks">—</span>
+            <span class="stat-label">Total Books</span>
+        </div>
+    </div>
+    <div class="stat-card glass-card" id="stat-members" style="cursor: pointer;" onclick="window.location.href='/members'">
+        <div class="stat-icon" style="--accent: #00b894;">
+            <i class="fas fa-users"></i>
+        </div>
+        <div class="stat-info">
+            <span class="stat-value" id="totalMembers">—</span>
+            <span class="stat-label">Active Students</span>
+        </div>
+    </div>
+    <div class="stat-card glass-card" id="stat-issued" style="cursor: pointer;" onclick="window.location.href='/issue-return'">
+        <div class="stat-icon" style="--accent: #fdcb6e;">
+            <i class="fas fa-hand-holding"></i>
+        </div>
+        <div class="stat-info">
+            <span class="stat-value" id="issuedToday">—</span>
+            <span class="stat-label">Issued Today</span>
+        </div>
+    </div>
+    <div class="stat-card glass-card" id="stat-overdue" style="cursor: pointer;" onclick="window.location.href='/issue-return'">
+        <div class="stat-icon" style="--accent: #e17055;">
+            <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <div class="stat-info">
+            <span class="stat-value" id="overdueCount">—</span>
+            <span class="stat-label">Overdue Books</span>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row -->
+<div class="charts-row">
+    <div class="chart-card glass-card" id="monthlyChartCard">
+        <div class="card-header">
+            <h3><i class="fas fa-chart-bar"></i> Books Issued Per Month</h3>
+        </div>
+        <div class="chart-wrapper">
+            <canvas id="monthlyChart"></canvas>
+        </div>
+    </div>
+    <div class="chart-card glass-card chart-small" id="categoryChartCard">
+        <div class="card-header">
+            <h3><i class="fas fa-chart-pie"></i> Books by Category</h3>
+        </div>
+        <div class="chart-wrapper">
+            <canvas id="categoryChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Reservations Row -->
+<div class="notifications-row" style="margin-bottom: 24px; display: none;" id="reservationsRow">
+    <div class="glass-card" style="padding: 24px;">
+        <div class="card-header">
+            <h3><i class="fas fa-bell text-warning"></i> Pending Pre-Book Orders</h3>
+        </div>
+        <div class="activity-list" id="adminReservationsList" style="max-height: 250px; overflow-y: auto; gap: 8px; display: flex; flex-direction: column;">
+            <div class="loading-spinner"><i class="fas fa-spinner fa-spin"></i> Loading...</div>
+        </div>
+    </div>
+</div>
+
+<!-- New Students Row -->
+<div class="notifications-row" style="margin-bottom: 24px; display: none;" id="newMembersRow">
+    <div class="glass-card" style="padding: 24px; border-left: 4px solid var(--accent-primary);">
+        <div class="card-header">
+            <h3><i class="fas fa-user-plus" style="color: var(--accent-primary);"></i> New Students Notification</h3>
+        </div>
+        <div class="activity-list" id="newMembersList" style="max-height: 250px; overflow-y: auto; gap: 8px; display: flex; flex-direction: column;">
+            <div class="loading-spinner"><i class="fas fa-spinner fa-spin"></i> Loading...</div>
+        </div>
+    </div>
+</div>
+
+<!-- Bottom Row -->
+<div class="bottom-row">
+    <!-- Recent Activity -->
+    <div class="activity-card glass-card" id="activityCard">
+        <div class="card-header">
+            <h3><i class="fas fa-history"></i> Recent Activity</h3>
+        </div>
+        <div class="activity-list" id="activityList">
+            <div class="loading-spinner"><i class="fas fa-spinner fa-spin"></i> Loading...</div>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="quick-stats glass-card" id="quickStatsCard">
+        <div class="card-header">
+            <h3><i class="fas fa-bolt"></i> Quick Stats</h3>
+        </div>
+        <div class="quick-stats-list">
+            <div class="quick-stat-item">
+                <span class="qs-label">Total Copies</span>
+                <span class="qs-value" id="totalCopies">—</span>
+            </div>
+            <div class="quick-stat-item">
+                <span class="qs-label">Currently Issued</span>
+                <span class="qs-value" id="currentlyIssued">—</span>
+            </div>
+            <div class="quick-stat-item">
+                <span class="qs-label">Unpaid Fines</span>
+                <span class="qs-value text-warning" id="unpaidFines">—</span>
+            </div>
+        </div>
+        <!-- Most Borrowed -->
+        <div class="card-header mt-3">
+            <h3><i class="fas fa-fire"></i> Most Borrowed</h3>
+        </div>
+        <div class="most-borrowed-list" id="mostBorrowedList">
+            <div class="loading-spinner"><i class="fas fa-spinner fa-spin"></i></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}

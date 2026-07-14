@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block title %}Reports — {{ app_name }}{% endblock %}
+{% block page_title %}Reports{% endblock %}
+
+{% block content %}
+<!-- Report Type Selector -->
+<div class="action-bar glass-card" id="reportActions">
+    <div class="report-tabs">
+        <button class="report-tab active" data-report="overdue" onclick="switchReport('overdue', this)" id="tabOverdue">
+            <i class="fas fa-exclamation-triangle"></i> Overdue Books
+        </button>
+        <button class="report-tab" data-report="issued" onclick="switchReport('issued', this)" id="tabIssued">
+            <i class="fas fa-hand-holding"></i> Currently Issued
+        </button>
+        <button class="report-tab" data-report="fines" onclick="switchReport('fines', this)" id="tabFines">
+            <i class="fas fa-rupee-sign"></i> Unpaid Fines
+        </button>
+        <button class="report-tab" data-report="all" onclick="switchReport('all', this)" id="tabAll">
+            <i class="fas fa-list"></i> All Records
+        </button>
+    </div>
+    <button class="btn btn-outline-primary" onclick="exportPDF()" id="exportPdfBtn">
+        <i class="fas fa-file-pdf"></i> Export PDF
+    </button>
+</div>
+
+<!-- Report Table -->
+<div class="table-card glass-card" id="reportTableCard">
+    <div class="table-responsive">
+        <table class="table data-table" id="reportTable">
+            <thead id="reportHead">
+                <tr>
+                    <th>Book</th>
+                    <th>Student</th>
+                    <th>Roll No</th>
+                    <th>Issued</th>
+                    <th>Due</th>
+                    <th>Days Late</th>
+                    <th>Fine</th>
+                </tr>
+            </thead>
+            <tbody id="reportBody">
+                <tr><td colspan="7" class="text-center"><i class="fas fa-spinner fa-spin"></i> Loading...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let currentReport = 'overdue';
+let currentData = [];
+
+document.addEventListener('DOMContentLoaded', () => loadReport('overdue'));
+
+function switchReport(type, btn) {
+    currentReport = type;
+    document.querySelectorAll('.report-tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    loadReport(type);
+}
+
+async function loadReport(type) {
+    const tbody = document.getElementById('reportBody');
+    tbody.innerHTML = '<tr><td colspan="7" class="text-center"><i class="fas fa-spinner fa-spin"></i> Loading...</td></tr>';
+
+    let url = '';
+    if (type === 'overdue') url = '/api/issues/overdue';
+    else if (type === 'issued') url = '/api/issues/issued';
+    else if (type === 'fines') url = '/api/issues/unpaid-fines';
+    else url = '/api/issues/all';
+
+    try {
+        const res = await fetch(url);
+        const data = await res.json();
+        currentData = data;
+
+        if (data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">No records found</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = data.map(r => {
+            const fine = r.fine_amount ? parseFloat(r.fine_amount).toFixed(2) : (r.estimated_fine ? r.estimated_fine.toFixed(2) : '0.00');
+            const daysLate = r.days_late || '—';
+            const returnDate = r.return_date || '—';
+
+            return `<tr>
+                <td>${r.title}</td>
+                <td>${r.member_name}</td>
+                <td>${r.roll_no}</td>
+                <td>${r.issue_date}</td>
+                <td>${r.due_date}</td>
+                <td>${type === 'all' ? returnDate : daysLate}</td>
+                <td>${fine > 0 ? '<span class="text-warning">₹' + fine + '</span>' : '—'}</td>
+            </tr>`;
+        }).join('');
+    } catch (err) {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center text-danger">Failed to load</td></tr>';
+    }
+}
+
+function exportPDF() {
+    if (!currentData.length) {
+        showToast('No data to export', 'warning');
+        return;
+    }
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    const titles = {
+        overdue: 'Overdue Books Report',
+        issued: 'Currently Issued Books',
+        fines: 'Unpaid Fines Report',
+        all: 'All Issue Records'
+    };
+
+    doc.setFontSize(18);
+    doc.text(titles[currentReport], 14, 22);
+    doc.setFontSize(10);
+    doc.text(`Generated: ${new Date().toLocaleDateString()}`, 14, 30);
+
+    const rows = currentData.map(r => [
+        r.title,
+        r.member_name,
+        r.roll_no,
+        r.issue_date,
+        r.due_date,
+        r.days_late || r.return_date || '—',
+        r.fine_amount ? '₹' + parseFloat(r.fine_amount).toFixed(2) : (r.estimated_fine ? '₹' + r.estimated_fine.toFixed(2) : '—')
+    ]);
+
+    doc.autoTable({
+        head: [['Book', 'Student', 'Roll No', 'Issued', 'Due', 'Days Late/Returned', 'Fine']],
+        body: rows,
+        startY: 35,
+        styles: { fontSize: 8 },
+        headStyles: { fillColor: [108, 92, 231] }
+    });
+
+    doc.save(`${currentReport}_report.pdf`);
+    showToast('PDF exported successfully!', 'success');
+}
+</script>
+{% endblock %}

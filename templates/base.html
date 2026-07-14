@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="LibraVault — Smart Library Management System for colleges and institutions">
+    <meta name="theme-color" content="#0a0e17">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='img/icon-192.png') }}">
+    <title>{% block title %}{{ app_name }}{% endblock %}</title>
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('libravault_theme') || 'black';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        })();
+    </script>
+    <!-- System Fonts used instead of Google Fonts for offline support -->
+    <!-- Bootstrap 5 CSS -->
+    <link href="{{ url_for('static', filename='vendor/bootstrap.min.css') }}" rel="stylesheet">
+
+    <!-- Font Awesome 6 -->
+    <link href="{{ url_for('static', filename='vendor/all.min.css') }}" rel="stylesheet">
+
+    <!-- Chart.js -->
+    <script src="{{ url_for('static', filename='vendor/chart.umd.min.js') }}"></script>
+
+    <!-- jsPDF for PDF export -->
+    <script src="{{ url_for('static', filename='vendor/jspdf.umd.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='vendor/jspdf.plugin.autotable.min.js') }}"></script>
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    {% if request.endpoint != 'auth.login' %}
+    <!-- ─── Sidebar ─────────────────────────────────────────── -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <a href="/" class="logo" style="text-decoration: none; color: inherit;">
+                <i class="fas fa-book-open"></i>
+                <span class="logo-text">{{ app_name }}</span>
+            </a>
+            <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle sidebar">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+
+        <nav class="sidebar-nav">
+            {% if role == 'admin' %}
+            <a href="/dashboard" class="nav-item {% if request.endpoint == 'dashboard.dashboard_page' or request.endpoint == 'dashboard.index' %}active{% endif %}" id="nav-dashboard">
+                <i class="fas fa-chart-line"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="/books" class="nav-item {% if request.endpoint == 'books.books_page' %}active{% endif %}" id="nav-books">
+                <i class="fas fa-book"></i>
+                <span>Books</span>
+            </a>
+            <a href="/members" class="nav-item {% if request.endpoint == 'members.members_page' %}active{% endif %}" id="nav-members">
+                <i class="fas fa-users"></i>
+                <span>Students</span>
+            </a>
+            <a href="/issue-return" class="nav-item {% if request.endpoint == 'issues.issue_return_page' %}active{% endif %}" id="nav-issue">
+                <i class="fas fa-exchange-alt"></i>
+                <span>Issue / Return</span>
+            </a>
+            <a href="/reports" class="nav-item {% if request.endpoint == 'issues.reports_page' %}active{% endif %}" id="nav-reports">
+                <i class="fas fa-file-alt"></i>
+                <span>Reports</span>
+            </a>
+            {% else %}
+            <a href="/books" class="nav-item {% if request.endpoint == 'books.books_page' %}active{% endif %}" id="nav-books">
+                <i class="fas fa-book"></i>
+                <span>Browse Catalog</span>
+            </a>
+            <a href="/my-books" class="nav-item {% if request.endpoint == 'issues.my_books_page' %}active{% endif %}" id="nav-mybooks">
+                <i class="fas fa-bookmark"></i>
+                <span>My Books</span>
+            </a>
+            <a href="/profile" class="nav-item {% if request.endpoint == 'members.my_profile_page' %}active{% endif %}" id="nav-profile">
+                <i class="fas fa-user-circle"></i>
+                <span>My Profile</span>
+            </a>
+            {% endif %}
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="user-card">
+                <div class="user-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="user-info">
+                    <span class="user-name">{{ user_name }}</span>
+                    <span class="user-role">{{ role | capitalize }}</span>
+                </div>
+            </div>
+            <a href="/logout" class="nav-item logout-btn" id="nav-logout">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- ─── Main Content ────────────────────────────────────── -->
+    <main class="main-content" id="mainContent">
+        <!-- Top Bar -->
+        <header class="top-bar">
+            <button class="mobile-toggle" id="mobileToggle" aria-label="Toggle menu">
+                <i class="fas fa-bars"></i>
+            </button>
+            <h1 class="page-title">{% block page_title %}Dashboard{% endblock %}</h1>
+            <div class="top-bar-actions" style="display: flex; align-items: center; gap: 15px;">
+                <div class="theme-switcher" style="display: flex; gap: 8px;">
+                    <button type="button" class="theme-btn" data-set-theme="black" style="width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--border-color); background-color: #0a0e17; cursor: pointer;" title="Black Theme"></button>
+                    <button type="button" class="theme-btn" data-set-theme="white" style="width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--border-color); background-color: #f8fafc; cursor: pointer;" title="White Theme"></button>
+                    <button type="button" class="theme-btn" data-set-theme="earthy" style="width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--border-color); background-color: #2d2a26; cursor: pointer;" title="Earthy Theme"></button>
+                </div>
+                <span class="date-display">
+                    <i class="far fa-calendar-alt"></i>
+                    <span id="currentDate"></span>
+                </span>
+            </div>
+        </header>
+
+        <!-- Page Content -->
+        <div class="content-wrapper">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+    {% else %}
+        {% block login_content %}{% endblock %}
+    {% endif %}
+
+    <!-- ─── Custom Confirm Modal ────────────────────────────── -->
+    <div class="modal fade" id="customConfirmModal" tabindex="-1" data-bs-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content glass-modal text-center p-3">
+                <div class="modal-body pb-0">
+                    <i class="fas fa-exclamation-circle text-warning mb-3" style="font-size: 3rem;"></i>
+                    <h5 class="modal-title mb-3" id="customConfirmMessage" style="font-size: 1.1rem; line-height: 1.4;">Are you sure?</h5>
+                </div>
+                <div class="modal-footer border-0 justify-content-center pt-0">
+                    <button type="button" class="btn btn-outline-light px-4" id="customConfirmCancel">Cancel</button>
+                    <button type="button" class="btn btn-primary btn-glow px-4" id="customConfirmOk">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ─── Toast Container ─────────────────────────────────── -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Bootstrap JS -->
+    <script src="{{ url_for('static', filename='vendor/bootstrap.bundle.min.js') }}"></script>
+
+    <!-- App JS -->
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>

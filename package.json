@@ -1,0 +1,49 @@
+{
+  "name": "libravault",
+  "version": "1.0.0",
+  "description": "LibraVault - Smart Library Management System",
+  "main": "electron/main.js",
+  "scripts": {
+    "web": "python app.py",
+    "desktop": "electron .",
+    "start": "electron .",
+    "electron": "electron .",
+    "setup": "pip install -r requirements.txt && npm install",
+    "setup-python": "pip install -r requirements.txt",
+    "dist": "set CSC_IDENTITY_AUTO_DISCOVERY=false && electron-builder --win",
+    "build": "electron-builder"
+  },
+  "build": {
+    "appId": "com.libravault.app",
+    "productName": "LibraVault",
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": "zip"
+    },
+    "files": [
+      "electron/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "server-dist/libravault-server",
+        "to": "libravault-server",
+        "filter": ["**/*"]
+      },
+      "static/**/*",
+      "templates/**/*",
+      "library.db",
+      "app.py",
+      "config.py"
+    ]
+  },
+  "keywords": ["library", "management", "flask", "electron"],
+  "author": "LibraVault",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^35.0.0",
+    "electron-builder": "^24.13.3"
+  }
+}

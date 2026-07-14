@@ -1,0 +1,226 @@
+{% extends "base.html" %}
+
+{% block title %}My Books — {{ app_name }}{% endblock %}
+{% block page_title %}My Books{% endblock %}
+
+{% block content %}
+<!-- Student Stats -->
+<div class="stats-row student-stats" id="studentStats">
+    <div class="stat-card glass-card">
+        <div class="stat-icon" style="--accent: #6c5ce7;">
+            <i class="fas fa-book-reader"></i>
+        </div>
+        <div class="stat-info">
+            <span class="stat-value" id="myBorrowedCount">0</span>
+            <span class="stat-label">Currently Borrowed</span>
+        </div>
+    </div>
+    <div class="stat-card glass-card">
+        <div class="stat-icon" style="--accent: #e17055;">
+            <i class="fas fa-exclamation-circle"></i>
+        </div>
+        <div class="stat-info">
+            <span class="stat-value" id="myOverdueCount">0</span>
+            <span class="stat-label">Overdue</span>
+        </div>
+    </div>
+    <div class="stat-card glass-card">
+        <div class="stat-icon" style="--accent: #fdcb6e;">
+            <i class="fas fa-rupee-sign"></i>
+        </div>
+        <div class="stat-info">
+            <span class="stat-value" id="myFinesTotal">₹0</span>
+            <span class="stat-label">Unpaid Fines</span>
+        </div>
+    </div>
+</div>
+
+<!-- Currently Borrowed Books -->
+<div class="section-header">
+    <h3><i class="fas fa-bookmark"></i> Currently Borrowed</h3>
+</div>
+<div class="borrowed-cards" id="borrowedCards">
+    <div class="loading-spinner"><i class="fas fa-spinner fa-spin"></i> Loading...</div>
+</div>
+
+<!-- Pending Reservations -->
+<div class="section-header mt-4">
+    <h3><i class="fas fa-shopping-cart"></i> My Reservations (Pending Collection)</h3>
+</div>
+<div class="borrowed-cards" id="reservationCards">
+    <div class="loading-spinner"><i class="fas fa-spinner fa-spin"></i> Loading...</div>
+</div>
+
+<!-- Borrowing History -->
+<div class="section-header mt-4">
+    <h3><i class="fas fa-history"></i> Borrowing History</h3>
+</div>
+<div class="table-card glass-card" id="myHistoryCard">
+    <div class="table-responsive">
+        <table class="table data-table">
+            <thead>
+                <tr>
+                    <th>Book</th>
+                    <th>Author</th>
+                    <th>Issued</th>
+                    <th>Due</th>
+                    <th>Returned</th>
+                    <th>Fine</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="myHistoryBody">
+                <tr><td colspan="7" class="text-center"><i class="fas fa-spinner fa-spin"></i> Loading...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    loadMyBooks();
+    loadMyReservations();
+    loadMyHistory();
+});
+
+async function loadMyBooks() {
+    try {
+        const res = await fetch('/api/issues/issued');
+        const issues = await res.json();
+
+        const borrowedCards = document.getElementById('borrowedCards');
+        const borrowedCount = issues.length;
+        let overdueCount = 0;
+        let totalFines = 0;
+
+        if (borrowedCount === 0) {
+            borrowedCards.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-book-open"></i>
+                    <p>No books currently borrowed</p>
+                    <a href="/books" class="btn btn-outline-primary btn-sm">Browse Catalog</a>
+                </div>`;
+        } else {
+            let html = '';
+            issues.forEach(issue => {
+                const isOverdue = issue.is_overdue;
+                if (isOverdue) overdueCount++;
+
+                const statusClass = isOverdue ? 'overdue' :
+                    (issue.days_remaining <= 3 ? 'due-soon' : 'on-time');
+                const statusText = isOverdue ?
+                    `Overdue by ${issue.days_late} days` :
+                    `${issue.days_remaining} days remaining`;
+                const fineText = isOverdue ? `₹${issue.estimated_fine}` : '';
+                if (isOverdue) totalFines += issue.estimated_fine;
+
+                html += `
+                <div class="borrowed-card glass-card ${statusClass}">
+                    <div class="bc-header">
+                        <span class="bc-title">${issue.title}</span>
+                        <span class="bc-status badge-${statusClass}">${statusText}</span>
+                    </div>
+                    <div class="bc-details">
+                        <span><i class="fas fa-user-edit"></i> ${issue.author}</span>
+                        <span><i class="fas fa-calendar-plus"></i> Issued: ${issue.issue_date}</span>
+                        <span><i class="fas fa-calendar-times"></i> Due: ${issue.due_date}</span>
+                        ${fineText ? `<span class="bc-fine"><i class="fas fa-rupee-sign"></i> Fine: ${fineText}</span>` : ''}
+                    </div>
+                </div>`;
+            });
+            borrowedCards.innerHTML = html;
+        }
+
+        document.getElementById('myBorrowedCount').textContent = borrowedCount;
+        document.getElementById('myOverdueCount').textContent = overdueCount;
+        document.getElementById('myFinesTotal').textContent = `₹${totalFines}`;
+    } catch (err) {
+        console.error('Failed to load books:', err);
+    }
+}
+
+async function loadMyReservations() {
+    try {
+        const res = await fetch('/api/issues/my-reservations');
+        const reservations = await res.json();
+        const reservationCards = document.getElementById('reservationCards');
+
+        if (reservations.length === 0) {
+            reservationCards.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-shopping-cart"></i>
+                    <p>No pending reservations</p>
+                </div>`;
+        } else {
+            let html = '';
+            reservations.forEach(res => {
+                html += `
+                <div class="borrowed-card glass-card on-time">
+                    <div class="bc-header">
+                        <span class="bc-title">${res.book_title}</span>
+                        <span class="bc-status badge-on-time">Collect by: ${res.due_date}</span>
+                    </div>
+                    <div class="bc-details">
+                        <span><i class="fas fa-user-edit"></i> ${res.author}</span>
+                        <span><i class="fas fa-calendar-plus"></i> Reserved on: ${res.issue_date}</span>
+                        <button class="btn btn-outline-danger btn-sm mt-2" onclick="cancelReservation(${res.issue_id})" style="border-color: #ff7675; color: #ff7675;">
+                            <i class="fas fa-times"></i> Cancel Booking
+                        </button>
+                    </div>
+                </div>`;
+            });
+            reservationCards.innerHTML = html;
+        }
+    } catch (err) {
+        console.error('Failed to load reservations:', err);
+    }
+}
+
+async function cancelReservation(issueId) {
+    if (!await customConfirm('Are you sure you want to cancel this reservation?')) return;
+    try {
+        const res = await fetch(`/api/issues/reservations/${issueId}/cancel`, { method: 'POST' });
+        const data = await res.json();
+        if (res.ok) {
+            showToast(data.message, 'success');
+            loadMyReservations();
+        } else {
+            showToast(data.error || 'Failed to cancel', 'error');
+        }
+    } catch (err) {
+        console.error(err);
+        showToast('Error cancelling reservation', 'error');
+    }
+}
+
+async function loadMyHistory() {
+    try {
+        const userId = '{{ session.get("user_id", "") }}';
+        const res = await fetch(`/api/members/${userId}/history`);
+        const history = await res.json();
+
+        const tbody = document.getElementById('myHistoryBody');
+        if (history.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">No borrowing history</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = history.map(h => `
+            <tr>
+                <td>${h.title}</td>
+                <td>${h.author}</td>
+                <td>${h.issue_date}</td>
+                <td>${h.due_date}</td>
+                <td>${h.return_date || '—'}</td>
+                <td>${h.fine_amount > 0 ? '₹' + parseFloat(h.fine_amount).toFixed(2) : '—'}</td>
+                <td><span class="status-badge status-${h.status}">${h.status}</span></td>
+            </tr>
+        `).join('');
+    } catch (err) {
+        console.error('Failed to load history:', err);
+    }
+}
+</script>
+{% endblock %}

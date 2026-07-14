@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+
+{% block title %}Login — {{ app_name }}{% endblock %}
+
+{% block login_content %}
+<div class="login-page">
+    <div class="login-left">
+        <!-- Animated background -->
+        <div class="login-bg">
+            <div class="floating-shape shape-1"></div>
+            <div class="floating-shape shape-2"></div>
+            <div class="floating-shape shape-3"></div>
+            <div class="floating-shape shape-4"></div>
+            <div class="floating-shape shape-5"></div>
+        </div>
+        
+        <div class="login-left-content">
+            <div class="logo-icon-large pulse-glow-icon">
+                <i class="fas fa-university"></i>
+            </div>
+            <h1 class="login-title-large title-shine">Govt. Arts and Science College, Thally</h1>
+            <p class="login-subtitle-large">Library Management System</p>
+            
+            <div class="thirukkural-box-large">
+                <p class="kural-text">"கற்க கசடறக் கற்பவை கற்றபின்<br>நிற்க அதற்குத் தக"</p>
+                <p class="kural-author">- திருவள்ளுவர் (Thiruvalluvar)</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="login-right">
+        <div class="login-container">
+            <div class="login-card glass-card">
+                <!-- Theme Switcher -->
+                <div class="theme-switcher" style="display: flex; justify-content: flex-end; gap: 8px; margin-bottom: 10px;">
+                    <button type="button" class="theme-btn" data-set-theme="black" style="width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--border-color); background-color: #0a0e17; cursor: pointer;" title="Black Theme"></button>
+                    <button type="button" class="theme-btn" data-set-theme="white" style="width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--border-color); background-color: #f8fafc; cursor: pointer;" title="White Theme"></button>
+                    <button type="button" class="theme-btn" data-set-theme="earthy" style="width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--border-color); background-color: #2d2a26; cursor: pointer;" title="Earthy Theme"></button>
+                </div>
+
+                <!-- Mobile Only Logo -->
+                <div class="mobile-logo-section" style="display: none;">
+                    <div class="logo-icon" style="margin: 0 auto 16px auto;">
+                        <i class="fas fa-university"></i>
+                    </div>
+                    <h1 class="login-title" style="font-size: 1.5rem; line-height: 1.4; margin-bottom: 10px; text-align: center;">Govt. Arts and Science College, Thally</h1>
+                    <p class="login-subtitle" style="font-size: 1.1rem; color: var(--accent-primary); text-align: center;">Library Management System</p>
+                    
+                    <div class="thirukkural-box" style="margin-top: 15px; margin-bottom: 25px; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 8px; border-left: 4px solid var(--accent-primary); text-align: center;">
+                        <p style="font-size: 1rem; font-style: normal; margin-bottom: 8px; color: var(--text-primary); line-height: 1.5; font-weight: 500;">
+                            "கற்க கசடறக் கற்பவை கற்றபின்<br>நிற்க அதற்குத் தக"
+                        </p>
+                        <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 0; font-style: italic;">
+                            - திருவள்ளுவர் (Thiruvalluvar)
+                        </p>
+                    </div>
+                </div>
+
+                <div class="desktop-form-header animate-fade-up" style="margin-bottom: 30px; animation-delay: 0.1s;">
+                    <h2 style="font-size: 1.8rem; font-weight: 700; margin-bottom: 8px;">Welcome Back!</h2>
+                    <p style="color: var(--text-secondary); font-size: 0.95rem;">Please enter your credentials to continue.</p>
+                </div>
+
+                <!-- Flash messages -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                        <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                <!-- Role Toggle -->
+                <div class="role-toggle-container animate-fade-up" style="display: flex; background: var(--bg-glass); border-radius: 8px; padding: 4px; margin-bottom: 20px; animation-delay: 0.2s;">
+                    <button type="button" id="btnStudentLogin" class="btn btn-primary" style="flex: 1; border-radius: 6px; padding: 8px;">Student</button>
+                    <button type="button" id="btnAdminLogin" class="btn btn-outline" style="flex: 1; border-radius: 6px; padding: 8px; background: transparent; border: none; color: var(--text-secondary);">Admin</button>
+                </div>
+
+                <!-- Login Form -->
+                <form id="loginForm" class="login-form" method="POST" action="/login">
+                    <input type="hidden" id="loginRole" name="role" value="student">
+                    
+                    <div class="form-group animate-fade-up" id="usernameGroup" style="animation-delay: 0.3s;">
+                        <label for="username" class="form-label">
+                            <i class="fas fa-user"></i> Username
+                        </label>
+                        <input type="text" class="form-control glass-input" id="username" name="username"
+                               placeholder="Enter your username" autocomplete="on" required>
+                    </div>
+
+                    <div class="form-group animate-fade-up" id="mobileGroup" style="animation-delay: 0.4s;">
+                        <label for="mobile" class="form-label">
+                            <i class="fas fa-phone"></i> Mobile Number
+                        </label>
+                        <input type="tel" class="form-control glass-input" id="mobile" name="mobile"
+                               placeholder="Enter your registered mobile number" required>
+                    </div>
+
+                    <div class="form-group animate-fade-up" id="passwordGroup" style="display: none; animation-delay: 0.4s;">
+                        <label for="password" class="form-label">
+                            <i class="fas fa-lock"></i> Password
+                        </label>
+                        <div class="password-wrapper">
+                            <input type="password" class="form-control glass-input" id="password" name="password"
+                                   placeholder="Enter your password" autocomplete="current-password">
+                            <button type="button" class="password-toggle" id="passwordToggle" aria-label="Toggle password visibility">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-login animate-fade-up" id="loginBtn" style="animation-delay: 0.5s;">
+                        <span class="btn-text">Sign In</span>
+                        <span class="btn-loader" style="display: none;">
+                            <i class="fas fa-spinner fa-spin"></i>
+                        </span>
+                    </button>
+                    <div class="auth-switch animate-fade-up" style="animation-delay: 0.6s;">
+                        <p id="signupText">Don't have an account? <a href="/register">Sign up</a></p>
+                    </div>
+                </form>
+
+
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+
+
+document.getElementById('btnStudentLogin').addEventListener('click', function() {
+    this.classList.add('btn-primary');
+    this.classList.remove('btn-outline');
+    this.style.background = '';
+    this.style.color = '';
+    
+    const adminBtn = document.getElementById('btnAdminLogin');
+    adminBtn.classList.remove('btn-primary');
+    adminBtn.classList.add('btn-outline');
+    adminBtn.style.background = 'transparent';
+    adminBtn.style.color = 'var(--text-secondary)';
+    
+    document.getElementById('loginRole').value = 'student';
+    document.getElementById('passwordGroup').style.display = 'none';
+    document.getElementById('password').removeAttribute('required');
+    
+    document.getElementById('mobileGroup').style.display = 'block';
+    document.getElementById('mobile').setAttribute('required', 'required');
+    document.getElementById('usernameGroup').style.display = 'block';
+    document.getElementById('username').setAttribute('required', 'required');
+    
+    document.getElementById('signupText').innerHTML = 'Don\'t have an account? <a href="/register">Sign up</a>';
+});
+
+document.getElementById('btnAdminLogin').addEventListener('click', function() {
+    this.classList.add('btn-primary');
+    this.classList.remove('btn-outline');
+    this.style.background = '';
+    this.style.color = '';
+    
+    const studentBtn = document.getElementById('btnStudentLogin');
+    studentBtn.classList.remove('btn-primary');
+    studentBtn.classList.add('btn-outline');
+    studentBtn.style.background = 'transparent';
+    studentBtn.style.color = 'var(--text-secondary)';
+    
+    document.getElementById('loginRole').value = 'admin';
+    document.getElementById('passwordGroup').style.display = 'block';
+    document.getElementById('password').setAttribute('required', 'required');
+    
+    document.getElementById('mobileGroup').style.display = 'none';
+    document.getElementById('mobile').removeAttribute('required');
+    document.getElementById('usernameGroup').style.display = 'block';
+    document.getElementById('username').setAttribute('required', 'required');
+    
+    document.getElementById('signupText').innerHTML = 'New Admin? <a href="/admin-register">Create an account</a>';
+});
+
+document.getElementById('passwordToggle').addEventListener('click', function() {
+    const input = document.getElementById('password');
+    const icon = this.querySelector('i');
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.replace('fa-eye', 'fa-eye-slash');
+    } else {
+        input.type = 'password';
+        icon.classList.replace('fa-eye-slash', 'fa-eye');
+    }
+});
+
+
+
+// Theme Switcher Logic
+document.querySelectorAll('.theme-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const theme = this.getAttribute('data-set-theme');
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('libravault_theme', theme);
+    });
+});
+</script>
+{% endblock %}

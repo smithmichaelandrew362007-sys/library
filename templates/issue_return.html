@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+
+{% block title %}Issue / Return — {{ app_name }}{% endblock %}
+{% block page_title %}Issue & Return Books{% endblock %}
+
+{% block content %}
+<div class="issue-return-grid">
+    <!-- ─── ISSUE PANEL ─────────────────────────────────── -->
+    <div class="ir-panel glass-card" id="issuePanel">
+        <div class="panel-header issue-header">
+            <h3><i class="fas fa-arrow-right"></i> Issue Book</h3>
+        </div>
+        <div class="panel-body">
+            <!-- Step 1: Find Student -->
+            <div class="ir-step" id="issueStep1">
+                <label class="step-label"><span class="step-num">1</span> Find Student</label>
+                <div class="search-input-wrapper">
+                    <i class="fas fa-search"></i>
+                    <input type="text" class="form-control glass-input" id="issueStudentSearch"
+                           placeholder="Enter roll number..." autocomplete="off">
+                </div>
+                <button class="btn btn-outline-primary btn-sm mt-2" onclick="searchStudentForIssue()">
+                    <i class="fas fa-search"></i> Search
+                </button>
+                <div class="student-result" id="issueStudentResult" style="display: none;"></div>
+            </div>
+
+            <!-- Step 2: Select Book -->
+            <div class="ir-step" id="issueStep2" style="display: none;">
+                <label class="step-label"><span class="step-num">2</span> Select Book</label>
+                <div class="search-input-wrapper">
+                    <i class="fas fa-book"></i>
+                    <input type="text" class="form-control glass-input" id="issueBookSearch"
+                           placeholder="Search book title..." autocomplete="off">
+                </div>
+                <div class="book-results" id="issueBookResults"></div>
+            </div>
+
+            <!-- Step 3: Confirm -->
+            <div class="ir-step" id="issueStep3" style="display: none;">
+                <label class="step-label"><span class="step-num">3</span> Confirm Issue</label>
+                <div class="confirm-card" id="issueConfirmCard"></div>
+                <div class="d-flex gap-2 mt-3">
+                    <button class="btn btn-primary btn-glow flex-fill" id="confirmIssueBtn" onclick="confirmIssue()">
+                        <i class="fas fa-check"></i> Confirm Issue
+                    </button>
+                    <button class="btn btn-outline-light" onclick="resetIssue()">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                </div>
+            </div>
+
+            <!-- Success State -->
+            <div class="ir-step" id="issueSuccess" style="display: none;">
+                <div class="success-animation">
+                    <div class="success-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <h4 class="success-text" id="issueSuccessMsg">Book Issued Successfully!</h4>
+                    <button class="btn btn-outline-primary mt-3" onclick="resetIssue()">
+                        <i class="fas fa-plus"></i> Issue Another
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ─── RETURN PANEL ────────────────────────────────── -->
+    <div class="ir-panel glass-card" id="returnPanel">
+        <div class="panel-header return-header">
+            <h3><i class="fas fa-arrow-left"></i> Return Book</h3>
+        </div>
+        <div class="panel-body">
+            <!-- Step 1: Find Student -->
+            <div class="ir-step" id="returnStep1">
+                <label class="step-label"><span class="step-num">1</span> Find Student</label>
+                <div class="search-input-wrapper">
+                    <i class="fas fa-search"></i>
+                    <input type="text" class="form-control glass-input" id="returnStudentSearch"
+                           placeholder="Enter roll number..." autocomplete="off">
+                </div>
+                <button class="btn btn-outline-primary btn-sm mt-2" onclick="searchStudentForReturn()">
+                    <i class="fas fa-search"></i> Search
+                </button>
+                <div class="student-result" id="returnStudentResult" style="display: none;"></div>
+            </div>
+
+            <!-- Step 2: Select Book to Return -->
+            <div class="ir-step" id="returnStep2" style="display: none;">
+                <label class="step-label"><span class="step-num">2</span> Select Book to Return</label>
+                <div class="issued-books-list" id="returnBooksList"></div>
+            </div>
+
+            <!-- Step 3: Confirm Return -->
+            <div class="ir-step" id="returnStep3" style="display: none;">
+                <label class="step-label"><span class="step-num">3</span> Confirm Return</label>
+                <div class="confirm-card" id="returnConfirmCard"></div>
+                <div class="d-flex gap-2 mt-3">
+                    <button class="btn btn-primary btn-glow flex-fill" id="confirmReturnBtn" onclick="confirmReturn()">
+                        <i class="fas fa-check"></i> Confirm Return
+                    </button>
+                    <button class="btn btn-outline-light" onclick="resetReturn()">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                </div>
+            </div>
+
+            <!-- Success State -->
+            <div class="ir-step" id="returnSuccess" style="display: none;">
+                <div class="success-animation">
+                    <div class="success-icon return-success">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <h4 class="success-text" id="returnSuccessMsg">Book Returned!</h4>
+                    <div class="fine-display" id="returnFineDisplay" style="display: none;"></div>
+                    <button class="btn btn-outline-primary mt-3" onclick="resetReturn()">
+                        <i class="fas fa-undo"></i> Return Another
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ─── PENDING RESERVATIONS PANEL ───────────────────── -->
+<div class="section-header mt-5 d-flex justify-content-between align-items-center">
+    <h3><i class="fas fa-clipboard-list"></i> Pending Reservations</h3>
+    <button class="btn btn-outline-light btn-sm" onclick="exportReservationsPDF()">
+        <i class="fas fa-file-pdf text-danger"></i> Export PDF
+    </button>
+</div>
+<div class="table-card glass-card">
+    <div class="table-responsive">
+        <table class="table data-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Book</th>
+                    <th>Student Name</th>
+                    <th>Roll No</th>
+                    <th>Reserved On</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="adminReservationsBody">
+                <tr><td colspan="6" class="text-center"><i class="fas fa-spinner fa-spin"></i> Loading...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/issues.js') }}"></script>
+{% endblock %}
