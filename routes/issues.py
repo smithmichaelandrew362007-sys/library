@@ -91,7 +91,7 @@ def api_pre_book():
     if not book_id:
         return jsonify({'error': 'Book ID required'}), 400
 
-    member_id = session['user_id']
+    member_id = session['member_id']
     success, message = issue_model.pre_book_book(book_id, member_id)
     if not success:
         return jsonify({'error': message}), 400
@@ -102,7 +102,7 @@ def api_pre_book():
 @login_required
 def api_cancel_reservation(issue_id):
     """API: Cancel a pre-booking (Admin or the student who booked it)."""
-    user_id = session['user_id']
+    user_id = session['member_id']
     role = session['role']
     success, message = issue_model.cancel_reservation(issue_id, user_id=user_id, role=role)
     if not success:
@@ -138,7 +138,7 @@ def api_my_reservations():
     """API: Get current student's pending reservations."""
     if session.get('role') != 'student':
         return jsonify({'error': 'Unauthorized'}), 403
-    return jsonify(issue_model.get_student_reservations(session['user_id']))
+    return jsonify(issue_model.get_student_reservations(session['member_id']))
 
 
 @issues_bp.route('/api/issues/pay-fine', methods=['POST'])
@@ -163,7 +163,7 @@ def api_get_issued():
     member_id = request.args.get('member_id', type=int)
     # Students can only see their own
     if session.get('role') != 'admin':
-        member_id = session.get('user_id')
+        member_id = session.get('member_id')
 
     issues = issue_model.get_issued_books(member_id)
     for i in issues:
@@ -218,7 +218,7 @@ def api_get_unpaid_fines():
     """API: Get unpaid fines."""
     member_id = request.args.get('member_id', type=int)
     if session.get('role') != 'admin':
-        member_id = session.get('user_id')
+        member_id = session.get('member_id')
 
     fines = issue_model.get_unpaid_fines(member_id)
     for f in fines:

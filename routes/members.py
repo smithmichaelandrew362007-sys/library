@@ -49,7 +49,7 @@ def api_get_members():
 def api_get_member(member_id):
     """API: Get a single member."""
     # Students can only view their own profile
-    if session.get('role') != 'admin' and session.get('user_id') != member_id:
+    if session.get('role') != 'admin' and session.get('member_id') != member_id:
         return jsonify({'error': 'Access denied'}), 403
 
     m = member_model.get_member(member_id)
@@ -122,7 +122,7 @@ def api_activate_member(member_id):
 @login_required
 def api_borrowing_history(member_id):
     """API: Get a member's borrowing history."""
-    if session.get('role') != 'admin' and session.get('user_id') != member_id:
+    if session.get('role') != 'admin' and session.get('member_id') != member_id:
         return jsonify({'error': 'Access denied'}), 403
 
     history = member_model.get_borrowing_history(member_id)
@@ -150,7 +150,7 @@ def my_profile_page():
 @login_required
 def api_profile_stats():
     """Get profile stats and messages for the logged-in student."""
-    member_id = session.get('user_id')
+    member_id = session.get('member_id')
     stats = member_model.get_profile_stats(member_id)
     messages = message_model.get_messages(member_id)
     
@@ -170,7 +170,7 @@ def api_send_message():
     if not member_id or not message_text:
         return jsonify({'error': 'Member ID and message text are required'}), 400
         
-    sender_id = session.get('user_id')
+    sender_id = session.get('member_id')
     message_model.send_message(member_id, sender_id, message_text)
     
     return jsonify({'success': True, 'message': 'Message sent successfully'})
@@ -179,7 +179,7 @@ def api_send_message():
 @login_required
 def api_mark_message_read(message_id):
     """Mark a message as read."""
-    member_id = session.get('user_id')
+    member_id = session.get('member_id')
     message_model.mark_as_read(message_id, member_id)
     return jsonify({'success': True})
 
