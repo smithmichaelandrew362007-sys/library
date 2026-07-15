@@ -16,7 +16,7 @@ def issue_return_page():
     """Render issue/return page (admin only)."""
     return render_template('issue_return.html',
                            app_name=config.APP_NAME,
-                           user_name=session.get('user_name'),
+                           user_name=session.get('name'),
                            role=session.get('role'))
 
 
@@ -26,7 +26,7 @@ def my_books_page():
     """Render student's borrowed books page."""
     return render_template('my_books.html',
                            app_name=config.APP_NAME,
-                           user_name=session.get('user_name'),
+                           user_name=session.get('name'),
                            role=session.get('role'))
 
 
@@ -36,7 +36,7 @@ def reports_page():
     """Render reports page (admin only)."""
     return render_template('reports.html',
                            app_name=config.APP_NAME,
-                           user_name=session.get('user_name'),
+                           user_name=session.get('name'),
                            role=session.get('role'))
 
 

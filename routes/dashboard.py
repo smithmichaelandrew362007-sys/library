@@ -17,11 +17,11 @@ def index():
     if session.get('role') == 'admin':
         return render_template('dashboard.html',
                                app_name=config.APP_NAME,
-                               user_name=session.get('user_name'),
+                               user_name=session.get('name'),
                                role=session.get('role'))
     return render_template('my_books.html',
                            app_name=config.APP_NAME,
-                           user_name=session.get('user_name'),
+                           user_name=session.get('name'),
                            role=session.get('role'))
 
 
@@ -31,7 +31,7 @@ def dashboard_page():
     """Render admin dashboard page."""
     return render_template('dashboard.html',
                            app_name=config.APP_NAME,
-                           user_name=session.get('user_name'),
+                           user_name=session.get('name'),
                            role=session.get('role'))
 
 

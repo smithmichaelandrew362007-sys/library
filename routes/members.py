@@ -17,7 +17,7 @@ def members_page():
     """Render member management page (admin only)."""
     return render_template('members.html',
                            app_name=config.APP_NAME,
-                           user_name=session.get('user_name'),
+                           user_name=session.get('name'),
                            role=session.get('role'))
 
 
@@ -139,11 +139,11 @@ def my_profile_page():
     if session.get('role') == 'admin':
         return render_template('dashboard.html',
                                app_name=config.APP_NAME,
-                               user_name=session.get('user_name'),
+                               user_name=session.get('name'),
                                role=session.get('role'))
     return render_template('my_profile.html',
                            app_name=config.APP_NAME,
-                           user_name=session.get('user_name'),
+                           user_name=session.get('name'),
                            role=session.get('role'))
 
 @members_bp.route('/api/profile/stats', methods=['GET'])

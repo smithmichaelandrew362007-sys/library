@@ -380,8 +380,6 @@ def pre_book_book(book_id, member_id):
     cursor = conn.cursor()
     
     try:
-        cursor.execute("BEGIN EXCLUSIVE TRANSACTION")
-        
         # Check if member already issued or pre-booked this book
         cursor.execute(
             "SELECT COUNT(*) as count FROM issue_records WHERE book_id = %s AND member_id = %s AND status IN ('issued', 'reserved')",
@@ -433,8 +431,6 @@ def cancel_reservation(issue_id, user_id=None, role=None):
     cursor = conn.cursor()
     
     try:
-        cursor.execute("BEGIN EXCLUSIVE TRANSACTION")
-        
         cursor.execute("SELECT * FROM issue_records WHERE issue_id = %s AND status = 'reserved'", (issue_id,))
         record = cursor.fetchone()
         
@@ -466,15 +462,13 @@ def fulfill_reservation(issue_id):
     cursor = conn.cursor()
     
     try:
-        cursor.execute("BEGIN EXCLUSIVE TRANSACTION")
-        
         cursor.execute("SELECT * FROM issue_records WHERE issue_id = %s AND status = 'reserved'", (issue_id,))
         if not cursor.fetchone():
             conn.rollback()
             return False, "Reservation not found."
             
         issue_date = date.today().isoformat()
-        due_date = (date.today() + timedelta(days=config.ISSUE_DURATION_DAYS)).isoformat()
+        due_date = (date.today() + timedelta(days=config.LOAN_DAYS)).isoformat()
         
         cursor.execute(
             "UPDATE issue_records SET status = 'issued', issue_date = %s, due_date = %s WHERE issue_id = %s",

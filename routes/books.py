@@ -20,7 +20,7 @@ def books_page():
     return render_template('books.html',
                            app_name=config.APP_NAME,
                            categories=categories,
-                           user_name=session.get('user_name'),
+                           user_name=session.get('name'),
                            role=session.get('role'))
 
 
@@ -50,7 +50,7 @@ def api_get_books():
 @login_required
 def api_get_book(book_id):
     """API: Get a single book."""
-    b = book_model.get_book(book_id)
+    b = book_model.get_book_by_id(book_id)
     if not b:
         return jsonify({'error': 'Book not found'}), 404
     b_dict = dict(b)
