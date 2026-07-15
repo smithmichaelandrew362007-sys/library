@@ -348,46 +348,72 @@ async function processImportFile() {
     }
 
     const file = fileInput.files[0];
-    
-    // Vercel Serverless Functions have a 4.5MB request body limit.
-    // We restrict the file size to 4MB to be safe and leave room for multipart boundaries.
-    if (file.size > 4 * 1024 * 1024) {
-        showToast('File is too large. Maximum allowed size is 4MB.', 'error');
-        return;
-    }
-
     const type = document.getElementById('importType').value;
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('type', type);
-
+    
     document.getElementById('importLoading').style.display = 'block';
     document.getElementById('extractBtn').disabled = true;
 
     try {
-        const response = await fetch('/api/books/import', {
-            method: 'POST',
-            body: formData
-        });
+        let extractedText = "";
 
-        if (!response.ok) {
-            let errorMsg = 'Failed to process file';
-            if (response.status === 413) {
-                errorMsg = 'File is too large. Maximum allowed size is 4MB.';
-            } else {
-                try {
-                    const errorData = await response.json();
-                    errorMsg = errorData.error || errorMsg;
-                } catch (e) {
-                    errorMsg = (await response.text()) || errorMsg;
-                }
+        if (type === 'pdf') {
+            // PDF.js extraction
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+            const arrayBuffer = await file.arrayBuffer();
+            const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
+            
+            for (let i = 1; i <= pdf.numPages; i++) {
+                const page = await pdf.getPage(i);
+                const textContent = await page.getTextContent();
+                // Join items with newline to simulate line-by-line parsing
+                const pageText = textContent.items.map(item => item.str).join('\n');
+                extractedText += pageText + "\n";
             }
-            throw new Error(errorMsg);
+        } else if (type === 'image') {
+            // Tesseract.js extraction
+            document.querySelector('#importLoading p').textContent = 'Running OCR on image... this might take a minute.';
+            const worker = await Tesseract.createWorker('eng');
+            const { data: { text } } = await worker.recognize(file);
+            extractedText = text;
+            await worker.terminate();
+            document.querySelector('#importLoading p').textContent = 'Analyzing file and extracting books... please wait.';
+        }
+
+        // Basic parsing logic: Split text by lines, ignore short lines
+        const lines = extractedText.split('\n').map(line => line.trim()).filter(line => line.length > 3);
+        
+        extractedBooks = [];
+        
+        for (let line of lines) {
+            const lowerLine = line.toLowerCase();
+            if (['invoice', 'receipt', 'total', 'tax', 'date', 'amount', 'qty', 'price', 'shop'].some(keyword => lowerLine.includes(keyword))) {
+                continue;
+            }
+            
+            let title = line;
+            let author = "Unknown";
+            
+            if (lowerLine.includes(" by ")) {
+                const parts = line.split(/ by /i);
+                title = parts[0].trim();
+                author = parts.slice(1).join(" by ").trim();
+            } else if (line.includes("-")) {
+                const parts = line.split("-");
+                title = parts[0].trim();
+                author = parts.slice(1).join("-").trim();
+            }
+            
+            // Ignore lines that are just numbers (like prices)
+            if (title.replace(/\./g, '').replace(/ /g, '').match(/^\d+$/)) {
+                continue;
+            }
+            
+            extractedBooks.push({
+                title: title,
+                author: author
+            });
         }
         
-        const result = await response.json();
-
-        extractedBooks = result.books || [];
         renderImportPreview();
         
         document.getElementById('importPreviewSection').style.display = 'block';
@@ -395,10 +421,12 @@ async function processImportFile() {
         document.getElementById('extractBtn').style.display = 'none';
         showToast('Extraction complete. Please review the books.', 'info');
     } catch (err) {
-        showToast(err.message, 'error');
+        console.error(err);
+        showToast(err.message || 'Failed to extract text from file', 'error');
     } finally {
         document.getElementById('importLoading').style.display = 'none';
         document.getElementById('extractBtn').disabled = false;
+        document.querySelector('#importLoading p').textContent = 'Analyzing file and extracting books... please wait.';
     }
 }
 

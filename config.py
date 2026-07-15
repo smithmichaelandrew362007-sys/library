@@ -7,6 +7,7 @@ SQLITE_DB_PATH = os.path.join(os.path.dirname(__file__), 'database', 'library.db
 # ─── Flask Configuration ─────────────────────────────────────────────
 SECRET_KEY = os.environ.get('SECRET_KEY', 'library-mgmt-secret-key-2026')
 DEBUG = os.environ.get('FLASK_DEBUG', 'True').lower() == 'true'
+MAX_CONTENT_LENGTH = 100 * 1024 * 1024 # 100 MB max upload size
 
 # ─── Library Business Rules ──────────────────────────────────────────
 MAX_BOOKS_PER_MEMBER = 3        # Max books a student can borrow at once
