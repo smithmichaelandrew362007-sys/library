@@ -327,14 +327,18 @@ function openImportModal(type) {
     extractedBooks = [];
 
     const fileInput = document.getElementById('importFile');
-    if (type === 'image') {
+    if (type === 'csv') {
+        document.getElementById('importModalTitle').textContent = 'Import Books from CSV';
+        document.getElementById('importFileLabel').textContent = 'Select CSV File';
+        fileInput.accept = '.csv';
+    } else if (type === 'excel') {
+        document.getElementById('importModalTitle').textContent = 'Import Books from Excel';
+        document.getElementById('importFileLabel').textContent = 'Select Excel File (.xlsx, .xls)';
+        fileInput.accept = '.xlsx, .xls';
+    } else {
         document.getElementById('importModalTitle').textContent = 'Import Books from Image';
         document.getElementById('importFileLabel').textContent = 'Select Image (Receipt/Invoice)';
         fileInput.accept = 'image/png, image/jpeg, image/jpg';
-    } else {
-        document.getElementById('importModalTitle').textContent = 'Import Books from PDF';
-        document.getElementById('importFileLabel').textContent = 'Select PDF Document';
-        fileInput.accept = '.pdf';
     }
     
     new bootstrap.Modal(document.getElementById('importBookModal')).show();
@@ -354,92 +358,42 @@ async function processImportFile() {
     document.getElementById('extractBtn').disabled = true;
 
     try {
-        let extractedText = "";
-        let tesseractWorker = null;
+        if (type === 'csv') {
+            // ── CSV Parsing (client-side) ──
+            document.querySelector('#importLoading p').textContent = 'Parsing CSV file...';
+            const text = await file.text();
+            extractedBooks = parseCSVToBooks(text);
 
-        if (type === 'pdf') {
-            // PDF.js extraction
-            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+        } else if (type === 'excel') {
+            // ── Excel Parsing (client-side via SheetJS) ──
+            document.querySelector('#importLoading p').textContent = 'Parsing Excel file...';
             const arrayBuffer = await file.arrayBuffer();
-            const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
-            
-            for (let i = 1; i <= pdf.numPages; i++) {
-                document.querySelector('#importLoading p').textContent = `Analyzing page ${i} of ${pdf.numPages}...`;
-                const page = await pdf.getPage(i);
-                const textContent = await page.getTextContent();
-                let items = textContent.items;
-                items.sort((a, b) => {
-                    // Sort by Y (descending) then by X (ascending)
-                    if (Math.abs(a.transform[5] - b.transform[5]) > 5) {
-                        return b.transform[5] - a.transform[5];
-                    }
-                    return a.transform[4] - b.transform[4];
-                });
-                
-                let linesArr = [];
-                let currentLineArr = [];
-                let currentY = items.length > 0 ? items[0].transform[5] : 0;
-                
-                for (let item of items) {
-                    if (Math.abs(item.transform[5] - currentY) > 5) {
-                        linesArr.push(currentLineArr.join(' '));
-                        currentLineArr = [];
-                        currentY = item.transform[5];
-                    }
-                    currentLineArr.push(item.str);
-                }
-                if (currentLineArr.length > 0) linesArr.push(currentLineArr.join(' '));
-                let pageText = linesArr.join('\n');
-                
-                // If text is very short, it's likely a scanned PDF image. Fallback to OCR.
-                if (pageText.trim().length < 50) {
-                    document.querySelector('#importLoading p').textContent = `Running OCR on scanned page ${i} of ${pdf.numPages}...`;
-                    
-                    const viewport = page.getViewport({ scale: 1.5 });
-                    const canvas = document.createElement('canvas');
-                    const context = canvas.getContext('2d');
-                    canvas.height = viewport.height;
-                    canvas.width = viewport.width;
-                    
-                    await page.render({ canvasContext: context, viewport: viewport }).promise;
-                    
-                    if (!tesseractWorker) {
-                        tesseractWorker = await Tesseract.createWorker('eng');
-                    }
-                    // Tesseract accepts a canvas element directly
-                    const { data: { text } } = await tesseractWorker.recognize(canvas);
-                    pageText = text;
-                }
-                
-                extractedText += pageText + "\n";
-            }
+            const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+            const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+            const rows = XLSX.utils.sheet_to_json(firstSheet, { defval: '' });
+            extractedBooks = parseRowsToBooks(rows);
+
         } else if (type === 'image') {
+            // ── Image OCR (Tesseract) + Gemini AI extraction ──
             document.querySelector('#importLoading p').textContent = 'Running OCR on image... this might take a minute.';
-            if (!tesseractWorker) {
-                tesseractWorker = await Tesseract.createWorker('eng');
-            }
+            const tesseractWorker = await Tesseract.createWorker('eng');
             const { data: { text } } = await tesseractWorker.recognize(file);
-            extractedText = text;
-        }
-
-        if (tesseractWorker) {
             await tesseractWorker.terminate();
-        }
-        
-        document.querySelector('#importLoading p').textContent = 'Extracting books...';
 
-        document.querySelector('#importLoading p').textContent = 'Extracting books using AI...';
+            let extractedText = text;
+            document.querySelector('#importLoading p').textContent = 'Extracting books using AI...';
 
-        try {
-            const aiRes = await apiFetch('/api/books/parse-import', {
-                method: 'POST',
-                body: JSON.stringify({ text: extractedText })
-            });
-            extractedBooks = aiRes.books || [];
-        } catch (apiErr) {
-            console.error("AI Parse Error:", apiErr);
-            showToast('AI Extraction failed. Please try again.', 'error');
-            extractedBooks = [];
+            try {
+                const aiRes = await apiFetch('/api/books/parse-import', {
+                    method: 'POST',
+                    body: JSON.stringify({ text: extractedText })
+                });
+                extractedBooks = aiRes.books || [];
+            } catch (apiErr) {
+                console.error("AI Parse Error:", apiErr);
+                showToast('AI Extraction failed. Please try again.', 'error');
+                extractedBooks = [];
+            }
         }
         
         renderImportPreview();
@@ -450,12 +404,113 @@ async function processImportFile() {
         showToast('Extraction complete. Please review the books.', 'info');
     } catch (err) {
         console.error(err);
-        showToast(err.message || 'Failed to extract text from file', 'error');
+        showToast(err.message || 'Failed to extract data from file', 'error');
     } finally {
         document.getElementById('importLoading').style.display = 'none';
         document.getElementById('extractBtn').disabled = false;
         document.querySelector('#importLoading p').textContent = 'Analyzing file and extracting books... please wait.';
     }
+}
+
+/**
+ * Parse CSV text into book objects.
+ * Matches columns by header name (case-insensitive, flexible naming).
+ */
+function parseCSVToBooks(csvText) {
+    const lines = csvText.split(/\r?\n/).filter(line => line.trim());
+    if (lines.length < 2) return [];
+
+    // Parse header row
+    const headers = parseCSVLine(lines[0]).map(h => h.toLowerCase().trim());
+
+    // Map known column names to our fields
+    const titleIdx = headers.findIndex(h => /title|book.?name|name/i.test(h));
+    const authorIdx = headers.findIndex(h => /author/i.test(h));
+    const publisherIdx = headers.findIndex(h => /publish/i.test(h));
+    const copiesIdx = headers.findIndex(h => /cop|qty|quantity|count/i.test(h));
+
+    if (titleIdx === -1) {
+        showToast('CSV must have a "Title" column', 'warning');
+        return [];
+    }
+
+    const books = [];
+    for (let i = 1; i < lines.length; i++) {
+        const cols = parseCSVLine(lines[i]);
+        const title = (cols[titleIdx] || '').trim();
+        if (!title) continue;
+        books.push({
+            title: title,
+            author: authorIdx >= 0 ? (cols[authorIdx] || 'Unknown').trim() : 'Unknown',
+            publisher: publisherIdx >= 0 ? (cols[publisherIdx] || '').trim() : '',
+            copies: copiesIdx >= 0 ? (parseInt(cols[copiesIdx]) || 1) : 1
+        });
+    }
+    return books;
+}
+
+/**
+ * Parse a single CSV line, respecting quoted fields.
+ */
+function parseCSVLine(line) {
+    const result = [];
+    let current = '';
+    let inQuotes = false;
+    for (let i = 0; i < line.length; i++) {
+        const ch = line[i];
+        if (inQuotes) {
+            if (ch === '"' && line[i + 1] === '"') {
+                current += '"';
+                i++;
+            } else if (ch === '"') {
+                inQuotes = false;
+            } else {
+                current += ch;
+            }
+        } else {
+            if (ch === '"') {
+                inQuotes = true;
+            } else if (ch === ',') {
+                result.push(current);
+                current = '';
+            } else {
+                current += ch;
+            }
+        }
+    }
+    result.push(current);
+    return result;
+}
+
+/**
+ * Parse Excel/SheetJS row objects into book objects.
+ * Matches keys by flexible column name patterns.
+ */
+function parseRowsToBooks(rows) {
+    if (!rows.length) return [];
+
+    // Get actual column keys from the first row
+    const keys = Object.keys(rows[0]);
+    const findKey = (pattern) => keys.find(k => pattern.test(k.toLowerCase().trim()));
+
+    const titleKey = findKey(/title|book.?name|name/i);
+    const authorKey = findKey(/author/i);
+    const publisherKey = findKey(/publish/i);
+    const copiesKey = findKey(/cop|qty|quantity|count/i);
+
+    if (!titleKey) {
+        showToast('Excel sheet must have a "Title" column', 'warning');
+        return [];
+    }
+
+    return rows
+        .filter(r => String(r[titleKey] || '').trim())
+        .map(r => ({
+            title: String(r[titleKey] || '').trim(),
+            author: authorKey ? String(r[authorKey] || 'Unknown').trim() : 'Unknown',
+            publisher: publisherKey ? String(r[publisherKey] || '').trim() : '',
+            copies: copiesKey ? (parseInt(r[copiesKey]) || 1) : 1
+        }));
 }
 
 function renderImportPreview() {

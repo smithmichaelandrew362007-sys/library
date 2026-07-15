@@ -29,8 +29,9 @@
                 <i class="fas fa-file-import"></i> Import Data
             </button>
             <ul class="dropdown-menu custom-dropdown glass-card" aria-labelledby="importDropdown">
+                <li><a class="dropdown-item" href="#" onclick="openImportModal('csv')"><i class="fas fa-file-csv"></i> Import from CSV</a></li>
+                <li><a class="dropdown-item" href="#" onclick="openImportModal('excel')"><i class="fas fa-file-excel"></i> Import from Excel</a></li>
                 <li><a class="dropdown-item" href="#" onclick="openImportModal('image')"><i class="fas fa-image"></i> Import from Image (Receipt)</a></li>
-                <li><a class="dropdown-item" href="#" onclick="openImportModal('pdf')"><i class="fas fa-file-pdf"></i> Import from PDF (Invoice)</a></li>
             </ul>
         </div>
         <button class="btn btn-primary btn-glow" id="addBookBtn" onclick="openAddBookModal()">
@@ -205,7 +206,7 @@
 {% block scripts %}
 <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 <!-- Client-side extraction libraries -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script src="{{ url_for('static', filename='js/books.js') }}"></script>
 {% endblock %}
