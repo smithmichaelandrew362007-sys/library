@@ -38,16 +38,24 @@ def add_book(data):
     conn = get_db()
     cursor = conn.cursor()
     copies = data.get('total_copies', 1)
+    
+    title = str(data.get('title', ''))[:255]
+    author = str(data.get('author', ''))[:255]
+    isbn = str(data.get('isbn', ''))[:20] if data.get('isbn') else None
+    category = str(data.get('category', ''))[:100]
+    publisher = str(data.get('publisher', ''))[:255]
+    edition = str(data.get('edition', ''))[:50]
+
     cursor.execute("""
         INSERT INTO books (title, author, isbn, category, publisher, edition, total_copies, available_copies)
         VALUES (%s, %s, %s, %s, %s, %s, %s, %s) RETURNING book_id
     """, (
-        data.get('title'),
-        data.get('author'),
-        data.get('isbn') or None,
-        data.get('category', ''),
-        data.get('publisher', ''),
-        data.get('edition', ''),
+        title,
+        author,
+        isbn,
+        category,
+        publisher,
+        edition,
         copies,
         copies
     ))
@@ -61,6 +69,13 @@ def update_book(book_id, data):
     conn = get_db()
     cursor = conn.cursor()
     
+    title = str(data.get('title', ''))[:255]
+    author = str(data.get('author', ''))[:255]
+    isbn = str(data.get('isbn', ''))[:20] if data.get('isbn') else None
+    category = str(data.get('category', ''))[:100]
+    publisher = str(data.get('publisher', ''))[:255]
+    edition = str(data.get('edition', ''))[:50]
+    
     # Calculate available copies based on new total and current issues
     cursor.execute("SELECT COUNT(*) as count FROM issue_records WHERE book_id = %s AND status = 'issued'", (book_id,))
     issued_count = cursor.fetchone()['count']
@@ -72,12 +87,12 @@ def update_book(book_id, data):
         publisher=%s, edition=%s, total_copies=%s, available_copies=%s
         WHERE book_id=%s
     """, (
-        data.get('title'),
-        data.get('author'),
-        data.get('isbn') or None,
-        data.get('category', ''),
-        data.get('publisher', ''),
-        data.get('edition', ''),
+        title,
+        author,
+        isbn,
+        category,
+        publisher,
+        edition,
         new_total,
         available_copies,
         book_id

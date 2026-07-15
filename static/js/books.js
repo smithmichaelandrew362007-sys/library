@@ -367,7 +367,29 @@ async function processImportFile() {
                 document.querySelector('#importLoading p').textContent = `Analyzing page ${i} of ${pdf.numPages}...`;
                 const page = await pdf.getPage(i);
                 const textContent = await page.getTextContent();
-                let pageText = textContent.items.map(item => item.str).join('\n');
+                let items = textContent.items;
+                items.sort((a, b) => {
+                    // Sort by Y (descending) then by X (ascending)
+                    if (Math.abs(a.transform[5] - b.transform[5]) > 5) {
+                        return b.transform[5] - a.transform[5];
+                    }
+                    return a.transform[4] - b.transform[4];
+                });
+                
+                let linesArr = [];
+                let currentLineArr = [];
+                let currentY = items.length > 0 ? items[0].transform[5] : 0;
+                
+                for (let item of items) {
+                    if (Math.abs(item.transform[5] - currentY) > 5) {
+                        linesArr.push(currentLineArr.join(' '));
+                        currentLineArr = [];
+                        currentY = item.transform[5];
+                    }
+                    currentLineArr.push(item.str);
+                }
+                if (currentLineArr.length > 0) linesArr.push(currentLineArr.join(' '));
+                let pageText = linesArr.join('\n');
                 
                 // If text is very short, it's likely a scanned PDF image. Fallback to OCR.
                 if (pageText.trim().length < 50) {
