@@ -313,3 +313,150 @@ function exportBooksPDF() {
     doc.save('book_catalog.pdf');
     showToast('PDF exported successfully!', 'success');
 }
+
+// ─── Import Books Operations ──────────────────────────────────
+let extractedBooks = [];
+
+function openImportModal(type) {
+    document.getElementById('importBookForm').reset();
+    document.getElementById('importType').value = type;
+    document.getElementById('importPreviewSection').style.display = 'none';
+    document.getElementById('confirmImportBtn').style.display = 'none';
+    document.getElementById('extractBtn').style.display = 'inline-block';
+    document.getElementById('importLoading').style.display = 'none';
+    extractedBooks = [];
+
+    const fileInput = document.getElementById('importFile');
+    if (type === 'image') {
+        document.getElementById('importModalTitle').textContent = 'Import Books from Image';
+        document.getElementById('importFileLabel').textContent = 'Select Image (Receipt/Invoice)';
+        fileInput.accept = 'image/png, image/jpeg, image/jpg';
+    } else {
+        document.getElementById('importModalTitle').textContent = 'Import Books from PDF';
+        document.getElementById('importFileLabel').textContent = 'Select PDF Document';
+        fileInput.accept = '.pdf';
+    }
+    
+    new bootstrap.Modal(document.getElementById('importBookModal')).show();
+}
+
+async function processImportFile() {
+    const fileInput = document.getElementById('importFile');
+    if (!fileInput.files.length) {
+        showToast('Please select a file first', 'warning');
+        return;
+    }
+
+    const type = document.getElementById('importType').value;
+    const formData = new FormData();
+    formData.append('file', fileInput.files[0]);
+    formData.append('type', type);
+
+    document.getElementById('importLoading').style.display = 'block';
+    document.getElementById('extractBtn').disabled = true;
+
+    try {
+        const response = await fetch('/api/books/import', {
+            method: 'POST',
+            body: formData
+        });
+
+        const result = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(result.error || 'Failed to process file');
+        }
+
+        extractedBooks = result.books || [];
+        renderImportPreview();
+        
+        document.getElementById('importPreviewSection').style.display = 'block';
+        document.getElementById('confirmImportBtn').style.display = 'inline-block';
+        document.getElementById('extractBtn').style.display = 'none';
+        showToast('Extraction complete. Please review the books.', 'info');
+    } catch (err) {
+        showToast(err.message, 'error');
+    } finally {
+        document.getElementById('importLoading').style.display = 'none';
+        document.getElementById('extractBtn').disabled = false;
+    }
+}
+
+function renderImportPreview() {
+    document.getElementById('extractedCount').textContent = extractedBooks.length;
+    const tbody = document.getElementById('importPreviewTableBody');
+    
+    if (extractedBooks.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">No books extracted</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = extractedBooks.map((b, idx) => `
+        <tr>
+            <td><input type="text" class="form-control form-control-sm glass-input" value="${b.title}" id="importTitle_${idx}"></td>
+            <td><input type="text" class="form-control form-control-sm glass-input" value="${b.author || 'Unknown'}" id="importAuthor_${idx}"></td>
+            <td><input type="number" class="form-control form-control-sm glass-input" value="1" id="importCopies_${idx}" style="width:60px;"></td>
+            <td>
+                <button class="btn btn-sm btn-outline-danger" onclick="removeExtractedBook(${idx})"><i class="fas fa-times"></i></button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function removeExtractedBook(idx) {
+    extractedBooks.splice(idx, 1);
+    renderImportPreview();
+}
+
+async function confirmImport() {
+    if (extractedBooks.length === 0) {
+        showToast('No books to import', 'warning');
+        return;
+    }
+
+    const confirmBtn = document.getElementById('confirmImportBtn');
+    confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+    confirmBtn.disabled = true;
+
+    let successCount = 0;
+    
+    // Save each book sequentially
+    for (let i = 0; i < extractedBooks.length; i++) {
+        const titleEl = document.getElementById(`importTitle_${i}`);
+        const authorEl = document.getElementById(`importAuthor_${i}`);
+        const copiesEl = document.getElementById(`importCopies_${i}`);
+        
+        if (!titleEl || !authorEl || !titleEl.value.trim()) continue;
+
+        const data = {
+            title: titleEl.value.trim(),
+            author: authorEl.value.trim() || 'Unknown',
+            isbn: '',
+            category: 'Imported',
+            publisher: '',
+            edition: '',
+            total_copies: parseInt(copiesEl.value) || 1,
+            available_copies: parseInt(copiesEl.value) || 1
+        };
+
+        try {
+            await fetch('/api/books', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+            successCount++;
+        } catch (err) {
+            console.error('Failed to save book:', data.title, err);
+        }
+    }
+
+    showToast(`Successfully imported ${successCount} books!`, 'success');
+    bootstrap.Modal.getInstance(document.getElementById('importBookModal')).hide();
+    loadBooks();
+    
+    confirmBtn.innerHTML = '<i class="fas fa-check"></i> Add Books to Library';
+    confirmBtn.disabled = false;
+}

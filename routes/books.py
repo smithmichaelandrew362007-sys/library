@@ -6,6 +6,14 @@ from flask import Blueprint, request, render_template, jsonify, session
 from routes.auth import login_required, admin_required
 from models import book as book_model
 import config
+import os
+import io
+import PyPDF2
+try:
+    import pytesseract
+    from PIL import Image
+except ImportError:
+    pytesseract = None
 
 books_bp = Blueprint('books', __name__)
 
@@ -103,3 +111,73 @@ def api_most_borrowed():
         if b.get('added_date') and hasattr(b['added_date'], 'strftime'):
             b['added_date'] = b['added_date'].strftime('%Y-%m-%d %H:%M:%S')
     return jsonify(books)
+
+
+@books_bp.route('/api/books/import', methods=['POST'])
+@admin_required
+def api_import_books():
+    """API: Import books from PDF or Image."""
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file provided'}), 400
+    
+    file = request.files['file']
+    import_type = request.form.get('type', 'pdf')
+    
+    if file.filename == '':
+        return jsonify({'error': 'No file selected'}), 400
+        
+    extracted_text = ""
+    
+    try:
+        if import_type == 'pdf':
+            pdf_reader = PyPDF2.PdfReader(file)
+            for page in pdf_reader.pages:
+                extracted_text += page.extract_text() + "\n"
+        elif import_type == 'image':
+            if not pytesseract:
+                return jsonify({'error': 'Image parsing not supported (pytesseract missing)'}), 500
+            # Open image from stream
+            image = Image.open(file.stream)
+            extracted_text = pytesseract.image_to_string(image)
+        else:
+            return jsonify({'error': 'Invalid import type'}), 400
+            
+    except Exception as e:
+        return jsonify({'error': f'Failed to process file: {str(e)}'}), 500
+        
+    # Basic parsing logic: Split text by lines, ignore short lines
+    lines = [line.strip() for line in extracted_text.split('\n') if len(line.strip()) > 3]
+    
+    books = []
+    # Very crude parsing: assume each line might be a book title, or split by some delimiter
+    # For a real app this would use NLP or more structured regex, but we will return lines as titles
+    # so the admin can review them in the preview table.
+    for line in lines:
+        # Ignore common receipt/invoice headers
+        lower_line = line.lower()
+        if any(keyword in lower_line for keyword in ['invoice', 'receipt', 'total', 'tax', 'date', 'amount', 'qty', 'price', 'shop']):
+            continue
+            
+        # Try to split by ' by ' or '-' to guess author
+        title = line
+        author = "Unknown"
+        
+        if " by " in lower_line:
+            parts = line.split(" by ", 1)
+            title = parts[0].strip()
+            author = parts[1].strip()
+        elif "-" in line:
+            parts = line.split("-", 1)
+            title = parts[0].strip()
+            author = parts[1].strip()
+            
+        # Ignore lines that are just numbers (like prices)
+        if title.replace('.', '', 1).isdigit():
+            continue
+            
+        books.append({
+            'title': title,
+            'author': author
+        })
+        
+    return jsonify({'success': True, 'books': books})

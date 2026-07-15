@@ -1888,3 +1888,20 @@ select option, .filter-select option {
 .table th, .table td {
     white-space: nowrap;
 }
+
+/* Custom Dropdown for Glassmorphism Support (Light/Dark themes) */
+.custom-dropdown {
+    background: var(--bg-secondary) !important; 
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-md);
+}
+
+.custom-dropdown .dropdown-item {
+    color: var(--text-primary);
+    transition: var(--transition-fast);
+}
+
+.custom-dropdown .dropdown-item:hover {
+    background: var(--bg-glass-hover);
+    color: var(--accent-primary);
+}

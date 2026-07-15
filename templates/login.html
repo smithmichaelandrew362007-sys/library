@@ -3,6 +3,15 @@
 {% block title %}Login — {{ app_name }}{% endblock %}
 
 {% block login_content %}
+<!-- Animated Splash Screen -->
+<div id="splashScreen" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: var(--bg-primary); z-index: 9999; display: flex; align-items: center; justify-content: center; transition: opacity 0.8s ease-out, visibility 0.8s ease-out;">
+    <div style="text-align: center; animation: cascadeFadeUp 0.8s ease-out forwards;">
+        <i class="fas fa-university pulse-glow-icon" style="font-size: 4.5rem; color: var(--accent-primary); margin-bottom: 25px; display: inline-block;"></i>
+        <h1 class="title-shine" style="font-size: 3.5rem; font-weight: 800; background: var(--accent-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin: 0;">Welcome to LibraVault</h1>
+        <p style="color: var(--text-secondary); margin-top: 15px; font-size: 1.2rem; letter-spacing: 3px; font-weight: 500; opacity: 0; animation: cascadeFadeUp 0.8s ease-out 0.4s forwards;">Loading Library System...</p>
+    </div>
+</div>
+
 <div class="login-page">
     <div class="login-left">
         <!-- Animated background -->
@@ -129,7 +138,18 @@
     </div>
 </div>
 <script>
-
+// Splash Screen Logic
+window.addEventListener('load', function() {
+    // Show splash for 2.5 seconds then fade out
+    setTimeout(function() {
+        const splash = document.getElementById('splashScreen');
+        if (splash) {
+            splash.style.opacity = '0';
+            splash.style.visibility = 'hidden';
+            setTimeout(() => splash.remove(), 800);
+        }
+    }, 2500);
+});
 
 document.getElementById('btnStudentLogin').addEventListener('click', function() {
     this.classList.add('btn-primary');
