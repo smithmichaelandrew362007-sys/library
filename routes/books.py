@@ -34,12 +34,14 @@ def api_get_books():
     else:
         books = book_model.get_all_books()
 
-    # Convert date objects to strings for JSON
+    books_list = []
     for b in books:
-        if b.get('added_date') and hasattr(b['added_date'], 'strftime'):
-            b['added_date'] = b['added_date'].strftime('%Y-%m-%d %H:%M:%S')
+        b_dict = dict(b)
+        if b_dict.get('added_date') and hasattr(b_dict['added_date'], 'strftime'):
+            b_dict['added_date'] = b_dict['added_date'].strftime('%Y-%m-%d %H:%M:%S')
+        books_list.append(b_dict)
 
-    return jsonify(books)
+    return jsonify(books_list)
 
 
 @books_bp.route('/api/books/<int:book_id>', methods=['GET'])
@@ -49,9 +51,10 @@ def api_get_book(book_id):
     b = book_model.get_book(book_id)
     if not b:
         return jsonify({'error': 'Book not found'}), 404
-    if b.get('added_date') and hasattr(b['added_date'], 'strftime'):
-        b['added_date'] = b['added_date'].strftime('%Y-%m-%d %H:%M:%S')
-    return jsonify(b)
+    b_dict = dict(b)
+    if b_dict.get('added_date') and hasattr(b_dict['added_date'], 'strftime'):
+        b_dict['added_date'] = b_dict['added_date'].strftime('%Y-%m-%d %H:%M:%S')
+    return jsonify(b_dict)
 
 
 @books_bp.route('/api/books', methods=['POST'])
