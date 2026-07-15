@@ -76,15 +76,11 @@
                 <i class="fas fa-bookmark"></i>
                 <span>My Books</span>
             </a>
-            <a href="/profile" class="nav-item {% if request.endpoint == 'members.my_profile_page' %}active{% endif %}" id="nav-profile">
-                <i class="fas fa-user-circle"></i>
-                <span>My Profile</span>
-            </a>
             {% endif %}
         </nav>
 
         <div class="sidebar-footer">
-            <div class="user-card">
+            <a href="{% if role == 'student' %}/profile{% else %}/dashboard{% endif %}" class="user-card" style="text-decoration: none; color: inherit; display: flex;">
                 <div class="user-avatar">
                     <i class="fas fa-user"></i>
                 </div>
@@ -92,7 +88,7 @@
                     <span class="user-name">{{ user_name }}</span>
                     <span class="user-role">{{ role | capitalize }}</span>
                 </div>
-            </div>
+            </a>
             <a href="/logout" class="nav-item logout-btn" id="nav-logout">
                 <i class="fas fa-sign-out-alt"></i>
                 <span>Logout</span>

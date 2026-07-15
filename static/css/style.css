@@ -324,6 +324,13 @@ body {
     border-radius: var(--radius-sm);
     background: var(--bg-glass);
     margin-bottom: 8px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.user-card:hover {
+    background: rgba(108, 92, 231, 0.1);
+    transform: translateY(-1px);
 }
 
 .user-avatar {
