@@ -44,7 +44,7 @@ def add_book(data):
     """, (
         data.get('title'),
         data.get('author'),
-        data.get('isbn', ''),
+        data.get('isbn') or None,
         data.get('category', ''),
         data.get('publisher', ''),
         data.get('edition', ''),
@@ -74,7 +74,7 @@ def update_book(book_id, data):
     """, (
         data.get('title'),
         data.get('author'),
-        data.get('isbn', ''),
+        data.get('isbn') or None,
         data.get('category', ''),
         data.get('publisher', ''),
         data.get('edition', ''),
