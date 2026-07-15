@@ -347,9 +347,18 @@ async function processImportFile() {
         return;
     }
 
+    const file = fileInput.files[0];
+    
+    // Vercel Serverless Functions have a 4.5MB request body limit.
+    // We restrict the file size to 4MB to be safe and leave room for multipart boundaries.
+    if (file.size > 4 * 1024 * 1024) {
+        showToast('File is too large. Maximum allowed size is 4MB.', 'error');
+        return;
+    }
+
     const type = document.getElementById('importType').value;
     const formData = new FormData();
-    formData.append('file', fileInput.files[0]);
+    formData.append('file', file);
     formData.append('type', type);
 
     document.getElementById('importLoading').style.display = 'block';
@@ -361,11 +370,22 @@ async function processImportFile() {
             body: formData
         });
 
-        const result = await response.json();
-        
         if (!response.ok) {
-            throw new Error(result.error || 'Failed to process file');
+            let errorMsg = 'Failed to process file';
+            if (response.status === 413) {
+                errorMsg = 'File is too large. Maximum allowed size is 4MB.';
+            } else {
+                try {
+                    const errorData = await response.json();
+                    errorMsg = errorData.error || errorMsg;
+                } catch (e) {
+                    errorMsg = (await response.text()) || errorMsg;
+                }
+            }
+            throw new Error(errorMsg);
         }
+        
+        const result = await response.json();
 
         extractedBooks = result.books || [];
         renderImportPreview();
