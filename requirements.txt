@@ -4,3 +4,4 @@ psycopg2-binary
 PyPDF2==3.0.1
 pytesseract==0.3.10
 Pillow
+google-generativeai

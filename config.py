@@ -9,6 +9,9 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'library-mgmt-secret-key-2026')
 DEBUG = os.environ.get('FLASK_DEBUG', 'True').lower() == 'true'
 MAX_CONTENT_LENGTH = 100 * 1024 * 1024 # 100 MB max upload size
 
+# ─── API Keys ────────────────────────────────────────────────────────
+GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY')
+
 # ─── Library Business Rules ──────────────────────────────────────────
 MAX_BOOKS_PER_MEMBER = 3        # Max books a student can borrow at once
 LOAN_DAYS = 14                  # Default loan period in days

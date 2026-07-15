@@ -6,6 +6,8 @@ from flask import Blueprint, request, render_template, jsonify, session
 from routes.auth import login_required, admin_required
 from models import book as book_model
 import config
+import json
+import google.generativeai as genai
 
 books_bp = Blueprint('books', __name__)
 
@@ -108,3 +110,51 @@ def api_most_borrowed():
     return jsonify(books)
 
 
+@books_bp.route('/api/books/parse-import', methods=['POST'])
+@admin_required
+def api_parse_import():
+    """API: Parse raw text into structured book JSON using Gemini API."""
+    if not config.GEMINI_API_KEY:
+        return jsonify({"error": "Gemini API key is not configured on the server."}), 500
+
+    data = request.get_json()
+    raw_text = data.get('text', '')
+    if not raw_text:
+        return jsonify({"error": "No text provided"}), 400
+
+    try:
+        genai.configure(api_key=config.GEMINI_API_KEY)
+        model = genai.GenerativeModel('gemini-2.5-flash')
+        
+        prompt = f"""
+        You are an intelligent data extraction assistant. I will provide you with raw text extracted from a scanned book invoice or receipt. The text might be messy and the column order might vary, but it generally contains tabular data with columns such as S.No, Author, Title, Publisher, Quantity, Rate, Amount.
+        
+        Your task is to extract the list of books from this text and return it as a JSON array of objects. 
+        Each object MUST have exactly these keys:
+        - "title" (string)
+        - "author" (string, use "Unknown" if not present)
+        - "publisher" (string, use "" if not present)
+        - "copies" (integer, default to 1 if not clearly specified)
+
+        Ignore any rows that are just totals, discounts, or headers. Focus only on the books.
+        
+        Raw Text:
+        {raw_text}
+        
+        Return ONLY valid JSON. No markdown formatting, no backticks, no extra text.
+        """
+        
+        response = model.generate_content(
+            prompt,
+            generation_config=genai.GenerationConfig(
+                response_mime_type="application/json",
+            )
+        )
+        
+        # Parse the returned JSON text
+        books_list = json.loads(response.text)
+        return jsonify({"books": books_list})
+
+    except Exception as e:
+        print("Gemini Extraction Error:", e)
+        return jsonify({"error": "Failed to extract books using AI"}), 500

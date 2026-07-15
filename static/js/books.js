@@ -428,58 +428,18 @@ async function processImportFile() {
         
         document.querySelector('#importLoading p').textContent = 'Extracting books...';
 
-        // Basic parsing logic: Split text by lines, ignore short lines
-        const lines = extractedText.split('\n').map(line => line.trim()).filter(line => line.length > 3);
-        
-        extractedBooks = [];
-        
-        for (let line of lines) {
-            const lowerLine = line.toLowerCase();
-            if (['invoice', 'receipt', 'total', 'tax', 'date', 'amount', 'qty', 'price', 'shop', 's.no', 'discount', 'rupees'].some(keyword => lowerLine.includes(keyword))) {
-                continue;
-            }
-            
-            let title = line;
-            let author = "Unknown";
-            
-            if (lowerLine.includes(" by ")) {
-                const parts = line.split(/ by /i);
-                title = parts[0].trim();
-                author = parts.slice(1).join(" by ").trim();
-            } else if (line.includes("-")) {
-                const parts = line.split("-");
-                title = parts[0].trim();
-                author = parts.slice(1).join("-").trim();
-            } else {
-                // Heuristic for tabular invoice lines: [S.No] [Author] [Title] [Publisher] [Qty] [Rate] [Amount]
-                // Strip trailing columns (Quantity, Rate, Amount) which are numbers, possibly prefixed by Rs
-                let cleaned = line.replace(/(\s+(?:Rs\.?|INR)?\s*[\d\.,]+\s*){2,}$/i, '').trim();
-                // Strip leading S.No (number followed by space)
-                cleaned = cleaned.replace(/^\d+\s+/, '').trim();
-                
-                if (cleaned.length > 3) {
-                    const parts = cleaned.split(/\s+/);
-                    if (parts.length > 1) {
-                        // Guess first word is author
-                        author = parts[0];
-                        title = parts.slice(1).join(' ');
-                    } else {
-                        title = cleaned;
-                    }
-                } else {
-                    continue;
-                }
-            }
-            
-            // Ignore lines that are just numbers (like prices)
-            if (title.replace(/\./g, '').replace(/ /g, '').match(/^\d+$/)) {
-                continue;
-            }
-            
-            extractedBooks.push({
-                title: title,
-                author: author
+        document.querySelector('#importLoading p').textContent = 'Extracting books using AI...';
+
+        try {
+            const aiRes = await apiFetch('/api/books/parse-import', {
+                method: 'POST',
+                body: JSON.stringify({ text: extractedText })
             });
+            extractedBooks = aiRes.books || [];
+        } catch (apiErr) {
+            console.error("AI Parse Error:", apiErr);
+            showToast('AI Extraction failed. Please try again.', 'error');
+            extractedBooks = [];
         }
         
         renderImportPreview();
@@ -509,9 +469,10 @@ function renderImportPreview() {
 
     tbody.innerHTML = extractedBooks.map((b, idx) => `
         <tr>
-            <td><input type="text" class="form-control form-control-sm glass-input" value="${b.title}" id="importTitle_${idx}"></td>
+            <td><input type="text" class="form-control form-control-sm glass-input" value="${b.title || ''}" id="importTitle_${idx}"></td>
             <td><input type="text" class="form-control form-control-sm glass-input" value="${b.author || 'Unknown'}" id="importAuthor_${idx}"></td>
-            <td><input type="number" class="form-control form-control-sm glass-input" value="1" id="importCopies_${idx}" style="width:60px;"></td>
+            <td><input type="text" class="form-control form-control-sm glass-input" value="${b.publisher || ''}" id="importPublisher_${idx}"></td>
+            <td><input type="number" class="form-control form-control-sm glass-input" value="${b.copies || 1}" id="importCopies_${idx}" style="width:60px;"></td>
             <td>
                 <button class="btn btn-sm btn-outline-danger" onclick="removeExtractedBook(${idx})"><i class="fas fa-times"></i></button>
             </td>
@@ -540,6 +501,7 @@ async function confirmImport() {
     for (let i = 0; i < extractedBooks.length; i++) {
         const titleEl = document.getElementById(`importTitle_${i}`);
         const authorEl = document.getElementById(`importAuthor_${i}`);
+        const pubEl = document.getElementById(`importPublisher_${i}`);
         const copiesEl = document.getElementById(`importCopies_${i}`);
         
         if (!titleEl || !authorEl || !titleEl.value.trim()) continue;
@@ -549,7 +511,7 @@ async function confirmImport() {
             author: authorEl.value.trim() || 'Unknown',
             isbn: '',
             category: 'Imported',
-            publisher: '',
+            publisher: pubEl ? pubEl.value.trim() : '',
             edition: '',
             total_copies: parseInt(copiesEl.value) || 1,
             available_copies: parseInt(copiesEl.value) || 1
