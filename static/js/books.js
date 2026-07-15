@@ -355,6 +355,7 @@ async function processImportFile() {
 
     try {
         let extractedText = "";
+        let tesseractWorker = null;
 
         if (type === 'pdf') {
             // PDF.js extraction
@@ -363,21 +364,47 @@ async function processImportFile() {
             const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
             
             for (let i = 1; i <= pdf.numPages; i++) {
+                document.querySelector('#importLoading p').textContent = `Analyzing page ${i} of ${pdf.numPages}...`;
                 const page = await pdf.getPage(i);
                 const textContent = await page.getTextContent();
-                // Join items with newline to simulate line-by-line parsing
-                const pageText = textContent.items.map(item => item.str).join('\n');
+                let pageText = textContent.items.map(item => item.str).join('\n');
+                
+                // If text is very short, it's likely a scanned PDF image. Fallback to OCR.
+                if (pageText.trim().length < 50) {
+                    document.querySelector('#importLoading p').textContent = `Running OCR on scanned page ${i} of ${pdf.numPages}...`;
+                    
+                    const viewport = page.getViewport({ scale: 1.5 });
+                    const canvas = document.createElement('canvas');
+                    const context = canvas.getContext('2d');
+                    canvas.height = viewport.height;
+                    canvas.width = viewport.width;
+                    
+                    await page.render({ canvasContext: context, viewport: viewport }).promise;
+                    
+                    if (!tesseractWorker) {
+                        tesseractWorker = await Tesseract.createWorker('eng');
+                    }
+                    // Tesseract accepts a canvas element directly
+                    const { data: { text } } = await tesseractWorker.recognize(canvas);
+                    pageText = text;
+                }
+                
                 extractedText += pageText + "\n";
             }
         } else if (type === 'image') {
-            // Tesseract.js extraction
             document.querySelector('#importLoading p').textContent = 'Running OCR on image... this might take a minute.';
-            const worker = await Tesseract.createWorker('eng');
-            const { data: { text } } = await worker.recognize(file);
+            if (!tesseractWorker) {
+                tesseractWorker = await Tesseract.createWorker('eng');
+            }
+            const { data: { text } } = await tesseractWorker.recognize(file);
             extractedText = text;
-            await worker.terminate();
-            document.querySelector('#importLoading p').textContent = 'Analyzing file and extracting books... please wait.';
         }
+
+        if (tesseractWorker) {
+            await tesseractWorker.terminate();
+        }
+        
+        document.querySelector('#importLoading p').textContent = 'Extracting books...';
 
         // Basic parsing logic: Split text by lines, ignore short lines
         const lines = extractedText.split('\n').map(line => line.trim()).filter(line => line.length > 3);
@@ -386,7 +413,7 @@ async function processImportFile() {
         
         for (let line of lines) {
             const lowerLine = line.toLowerCase();
-            if (['invoice', 'receipt', 'total', 'tax', 'date', 'amount', 'qty', 'price', 'shop'].some(keyword => lowerLine.includes(keyword))) {
+            if (['invoice', 'receipt', 'total', 'tax', 'date', 'amount', 'qty', 'price', 'shop', 's.no', 'discount', 'rupees'].some(keyword => lowerLine.includes(keyword))) {
                 continue;
             }
             
@@ -401,6 +428,25 @@ async function processImportFile() {
                 const parts = line.split("-");
                 title = parts[0].trim();
                 author = parts.slice(1).join("-").trim();
+            } else {
+                // Heuristic for tabular invoice lines: [S.No] [Author] [Title] [Publisher] [Qty] [Rate] [Amount]
+                // Strip trailing columns (Quantity, Rate, Amount) which are numbers, possibly prefixed by Rs
+                let cleaned = line.replace(/(\s+(?:Rs\.?|INR)?\s*[\d\.,]+\s*){2,}$/i, '').trim();
+                // Strip leading S.No (number followed by space)
+                cleaned = cleaned.replace(/^\d+\s+/, '').trim();
+                
+                if (cleaned.length > 3) {
+                    const parts = cleaned.split(/\s+/);
+                    if (parts.length > 1) {
+                        // Guess first word is author
+                        author = parts[0];
+                        title = parts.slice(1).join(' ');
+                    } else {
+                        title = cleaned;
+                    }
+                } else {
+                    continue;
+                }
             }
             
             // Ignore lines that are just numbers (like prices)
