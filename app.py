@@ -3,6 +3,10 @@ LibraVault — Library Management System
 Flask Application Entry Point
 """
 
+# Load .env file automatically (must be before config import)
+from dotenv import load_dotenv
+load_dotenv()
+
 from flask import Flask, redirect, url_for, send_from_directory
 import config
 from models import init_database

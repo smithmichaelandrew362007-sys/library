@@ -7,3 +7,4 @@ Pillow
 google-generativeai
 Authlib
 requests
+python-dotenv
