@@ -71,6 +71,7 @@ def register():
             'department': request.form.get('department'),
             'year': request.form.get('year'),
             'contact': request.form.get('contact'),
+            'email': request.form.get('email', ''),
             'role': 'student'
         }
         

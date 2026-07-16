@@ -1,7 +1,8 @@
 from models import get_db
+from utils.notifications import send_email, send_sms
 
 def send_message(member_id, sender_id, message_text):
-    """Send a message/notification to a member."""
+    """Send a message/notification to a member and deliver via email/SMS."""
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute(
@@ -10,7 +11,29 @@ def send_message(member_id, sender_id, message_text):
         (member_id, sender_id, message_text)
     )
     conn.commit()
+
+    # Fetch recipient details for external notifications
+    cursor.execute(
+        "SELECT name, email, contact FROM members WHERE member_id = %s",
+        (member_id,)
+    )
+    recipient = cursor.fetchone()
     conn.close()
+
+    if recipient:
+        subject = "📚 LibraVault — Message from your Librarian"
+        body    = (
+            f"Dear {recipient['name']},\n\n"
+            f"{message_text}\n\n"
+            "— Library Staff, LibraVault"
+        )
+        # Send email (silent fail if not configured)
+        if recipient.get('email'):
+            send_email(recipient['email'], subject, body)
+        # Send SMS (silent fail if not configured)
+        if recipient.get('contact'):
+            send_sms(recipient['contact'], f"LibraVault: {message_text}")
+
     return True
 
 def get_messages(member_id):

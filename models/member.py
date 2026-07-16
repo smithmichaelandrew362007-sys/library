@@ -95,10 +95,10 @@ def register_member(data):
     hashed_pw = generate_password_hash(data.get('password', 'student123'))
     try:
         cursor.execute(
-            """INSERT INTO members (name, roll_no, department, year, contact, username, password, role, status)
-               VALUES (%s, %s, %s, %s, %s, %s, %s, %s, 'active') RETURNING member_id""",
+            """INSERT INTO members (name, roll_no, department, year, contact, email, username, password, role, status)
+               VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, 'active') RETURNING member_id""",
             (data['name'], data['roll_no'], data.get('department', ''),
-             data.get('year', ''), data.get('contact', ''),
+             data.get('year', ''), data.get('contact', ''), data.get('email', ''),
              data['username'], hashed_pw, data.get('role', 'student'))
         )
         result = cursor.fetchone()
@@ -119,10 +119,10 @@ def update_member(member_id, data):
     cursor = conn.cursor()
     cursor.execute(
         """UPDATE members SET name=%s, roll_no=%s, department=%s,
-           year=%s, contact=%s, username=%s
+           year=%s, contact=%s, email=%s, username=%s
            WHERE member_id=%s""",
         (data['name'], data['roll_no'], data.get('department', ''),
-         data.get('year', ''), data.get('contact', ''),
+         data.get('year', ''), data.get('contact', ''), data.get('email', ''),
          data['username'], member_id)
     )
     conn.commit()

@@ -12,6 +12,22 @@ MAX_CONTENT_LENGTH = 100 * 1024 * 1024 # 100 MB max upload size
 # ─── API Keys ────────────────────────────────────────────────────────
 GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY')
 
+# ─── Google OAuth 2.0 ────────────────────────────────────────
+# Get credentials at: https://console.cloud.google.com/apis/credentials
+GOOGLE_CLIENT_ID     = os.environ.get('GOOGLE_CLIENT_ID', '')
+GOOGLE_CLIENT_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET', '')
+
+# ─── Email Notifications (Gmail SMTP) ─────────────────────────────
+# MAIL_SENDER: your Gmail address
+# MAIL_APP_PASSWORD: 16-character App Password from Google Account settings
+#   How to get it: https://myaccount.google.com/apppasswords
+MAIL_SENDER       = os.environ.get('MAIL_SENDER', '')
+MAIL_APP_PASSWORD = os.environ.get('MAIL_APP_PASSWORD', '')
+
+# ─── SMS Notifications (Fast2SMS — India) ────────────────────────────
+# Sign up free at: https://fast2sms.com
+FAST2SMS_API_KEY  = os.environ.get('FAST2SMS_API_KEY', '')
+
 # ─── Library Business Rules ──────────────────────────────────────────
 MAX_BOOKS_PER_MEMBER = 3        # Max books a student can borrow at once
 LOAN_DAYS = 14                  # Default loan period in days
