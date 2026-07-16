@@ -37,6 +37,8 @@ def init_oauth(app):
             "Google OAuth not configured. "
             "Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET environment variables."
         )
+    else:
+        app.logger.info(f"Google OAuth configured with client_id: {google_client_id[:20]}...")
 
     oauth.register(
         name='google',
@@ -52,7 +54,9 @@ def init_oauth(app):
 @oauth_bp.route('/auth/google')
 def google_login():
     """Step 1: Redirect user to Google sign-in page."""
-    redirect_uri = url_for('oauth.google_callback', _external=True)
+    # Hardcode redirect_uri to guarantee it matches Google Cloud Console config.
+    # url_for(_external=True) can omit the port in some environments (Electron, proxies).
+    redirect_uri = request.host_url.rstrip('/') + '/auth/google/callback'
     return oauth.google.authorize_redirect(redirect_uri)
 
 
