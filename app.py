@@ -4,8 +4,10 @@ Flask Application Entry Point
 """
 
 # Load .env file automatically (must be before config import)
+import os
 from dotenv import load_dotenv
-load_dotenv()
+env_path = os.path.join(os.path.dirname(__file__), '.env')
+load_dotenv(env_path)
 
 from flask import Flask, redirect, url_for, send_from_directory
 import config
