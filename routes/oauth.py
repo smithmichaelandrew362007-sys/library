@@ -35,6 +35,10 @@ def init_oauth(app):
     app.config['GOOGLE_CLIENT_ID'] = google_client_id
     app.config['GOOGLE_CLIENT_SECRET'] = google_client_secret
 
+    print(f"[DEBUG OAUTH] Client ID length: {len(google_client_id)}")
+    print(f"[DEBUG OAUTH] Client ID starts with: {google_client_id[:5] if google_client_id else 'None'}")
+    print(f"[DEBUG OAUTH] ENV GOOGLE_CLIENT_ID: {__import__('os').environ.get('GOOGLE_CLIENT_ID', 'Missing')}")
+
     oauth.init_app(app)
 
     if not google_client_id or not google_client_secret:
@@ -53,7 +57,7 @@ def init_oauth(app):
 
 # ─── Routes ──────────────────────────────────────────────────────────
 
-@oauth_bp.route('/auth/google')
+@oauth_bp.route('/auth/google/login')
 def google_login():
     """Step 1: Redirect user to Google sign-in page."""
     # Hardcode redirect_uri to guarantee it matches Google Cloud Console config.
