@@ -8,6 +8,7 @@ from models import book as book_model
 import config
 import json
 import google.generativeai as genai
+from utils.cache import cache
 
 books_bp = Blueprint('books', __name__)
 
@@ -93,6 +94,7 @@ def api_delete_book(book_id):
 
 @books_bp.route('/api/books/categories', methods=['GET'])
 @login_required
+@cache.cached(timeout=300)
 def api_get_categories():
     """API: Get all book categories."""
     return jsonify(book_model.get_categories())
@@ -100,6 +102,7 @@ def api_get_categories():
 
 @books_bp.route('/api/books/most-borrowed', methods=['GET'])
 @login_required
+@cache.cached(timeout=300, query_string=True)
 def api_most_borrowed():
     """API: Get most borrowed books."""
     limit = request.args.get('limit', 10, type=int)

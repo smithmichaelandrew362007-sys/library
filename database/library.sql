@@ -71,6 +71,10 @@ CREATE INDEX IF NOT EXISTS idx_issues_status ON issue_records(status);
 CREATE INDEX IF NOT EXISTS idx_issues_due_date ON issue_records(due_date);
 CREATE INDEX IF NOT EXISTS idx_issues_book ON issue_records(book_id);
 CREATE INDEX IF NOT EXISTS idx_issues_member ON issue_records(member_id);
+CREATE INDEX IF NOT EXISTS idx_issues_member_status ON issue_records(member_id, status);
+CREATE INDEX IF NOT EXISTS idx_issues_issue_date ON issue_records(issue_date);
+CREATE INDEX IF NOT EXISTS idx_members_role_status ON members(role, status);
+CREATE INDEX IF NOT EXISTS idx_issues_fine_paid ON issue_records(fine_paid);
 
 -- ============================================================
 -- SEED DATA

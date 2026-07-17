@@ -6,6 +6,7 @@ from flask import Blueprint, render_template, jsonify, session
 from routes.auth import login_required, admin_required
 from models import issue as issue_model
 import config
+from utils.cache import cache
 
 dashboard_bp = Blueprint('dashboard', __name__)
 
@@ -37,6 +38,7 @@ def dashboard_page():
 
 @dashboard_bp.route('/api/dashboard/stats', methods=['GET'])
 @admin_required
+@cache.cached(timeout=60)
 def api_dashboard_stats():
     """API: Get dashboard statistics."""
     stats = issue_model.get_dashboard_stats()

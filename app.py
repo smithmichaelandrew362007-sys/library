@@ -17,6 +17,10 @@ from models import init_database
 app = Flask(__name__)
 app.secret_key = config.SECRET_KEY
 
+# ─── Initialize Cache ────────────────────────────────────────
+from utils.cache import cache
+cache.init_app(app, config={'CACHE_TYPE': 'SimpleCache', 'CACHE_DEFAULT_TIMEOUT': 60})
+
 # ─── Register Blueprints ─────────────────────────────────────
 from routes.auth import auth_bp
 from routes.books import books_bp

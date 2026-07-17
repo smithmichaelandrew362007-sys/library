@@ -27,23 +27,23 @@ oauth = OAuth()
 
 def init_oauth(app):
     """Call this from app.py after creating the Flask app."""
+    import config
+    google_client_id     = config.GOOGLE_CLIENT_ID
+    google_client_secret = config.GOOGLE_CLIENT_SECRET
+
+    # Authlib Flask integration expects these in app.config
+    app.config['GOOGLE_CLIENT_ID'] = google_client_id
+    app.config['GOOGLE_CLIENT_SECRET'] = google_client_secret
+
     oauth.init_app(app)
 
-    google_client_id     = os.environ.get('GOOGLE_CLIENT_ID', '')
-    google_client_secret = os.environ.get('GOOGLE_CLIENT_SECRET', '')
-
     if not google_client_id or not google_client_secret:
-        app.logger.warning(
-            "Google OAuth not configured. "
-            "Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET environment variables."
-        )
+        app.logger.warning("Google OAuth missing!")
     else:
         app.logger.info(f"Google OAuth configured with client_id: {google_client_id[:20]}...")
 
     oauth.register(
         name='google',
-        client_id=google_client_id,
-        client_secret=google_client_secret,
         server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
         client_kwargs={'scope': 'openid email profile'},
     )

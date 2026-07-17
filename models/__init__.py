@@ -99,6 +99,13 @@ def init_database():
             print("[OK] PostgreSQL Database initialized with schema and seed data.")
         else:
             print("[OK] PostgreSQL Database already exists, skipping initialization.")
+            cursor.execute("""
+                CREATE INDEX IF NOT EXISTS idx_issues_member_status ON issue_records(member_id, status);
+                CREATE INDEX IF NOT EXISTS idx_issues_issue_date ON issue_records(issue_date);
+                CREATE INDEX IF NOT EXISTS idx_members_role_status ON members(role, status);
+                CREATE INDEX IF NOT EXISTS idx_issues_fine_paid ON issue_records(fine_paid);
+            """)
+            print("[OK] Verified performance indexes.")
 
         conn.commit()
         conn.close()
