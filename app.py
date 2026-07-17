@@ -10,11 +10,14 @@ env_path = os.path.join(os.path.dirname(__file__), '.env')
 load_dotenv(env_path)
 
 from flask import Flask, redirect, url_for, send_from_directory
+from werkzeug.middleware.proxy_fix import ProxyFix
 import config
 from models import init_database
 
 # ─── Create Flask App ────────────────────────────────────────
 app = Flask(__name__)
+# Tell Flask it is behind a proxy (like Vercel) so url_for generates https:// links
+app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 app.secret_key = config.SECRET_KEY
 
 # ─── Initialize Cache ────────────────────────────────────────
