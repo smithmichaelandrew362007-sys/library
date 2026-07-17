@@ -44,6 +44,8 @@ def init_oauth(app):
 
     oauth.register(
         name='google',
+        client_id=google_client_id,
+        client_secret=google_client_secret,
         server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
         client_kwargs={'scope': 'openid email profile'},
     )

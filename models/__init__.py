@@ -12,7 +12,7 @@ def init_pool():
     if _db_pool is None:
         try:
             _db_pool = ThreadedConnectionPool(
-                1, 20,
+                1, 5,
                 config.DATABASE_URL,
                 connection_factory=psycopg2.extras.RealDictConnection
             )
