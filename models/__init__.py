@@ -9,16 +9,21 @@ _db_pool = None
 
 def init_pool():
     global _db_pool
+    import time
     if _db_pool is None:
-        try:
-            _db_pool = ThreadedConnectionPool(
-                1, 5,
-                config.DATABASE_URL,
-                connection_factory=psycopg2.extras.RealDictConnection
-            )
-            print("[INFO] Database connection pool initialized.")
-        except Exception as e:
-            print(f"[ERROR] Failed to initialize connection pool: {e}")
+        for attempt in range(5):
+            try:
+                _db_pool = ThreadedConnectionPool(
+                    1, 5,
+                    config.DATABASE_URL,
+                    connection_factory=psycopg2.extras.RealDictConnection
+                )
+                print("[INFO] Database connection pool initialized.")
+                return
+            except Exception as e:
+                print(f"[WARN] Database wake-up retry {attempt+1}/5: {e}")
+                time.sleep(2)
+        print("[ERROR] Failed to initialize connection pool after 5 attempts.")
 
 class PooledConnectionWrapper:
     """Wrapper to intercept close() and return the connection to the pool."""

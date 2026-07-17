@@ -1,7 +1,7 @@
 import os
 
 # ─── Database Configuration ──────────────────────────────────────────
-DATABASE_URL = os.environ.get('DATABASE_URL', 'postgresql://neondb_owner:npg_CH56OhryMFei@ep-polished-river-atpapz0s-pooler.c-9.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require')
+DATABASE_URL = os.environ.get('DATABASE_URL', 'postgresql://neondb_owner:npg_CH56OhryMFei@ep-polished-river-atpapz0s.c-9.us-east-1.aws.neon.tech/neondb?sslmode=require')
 SQLITE_DB_PATH = os.path.join(os.path.dirname(__file__), 'database', 'library.db') # Fallback/Legacy
 
 # ─── Flask Configuration ─────────────────────────────────────────────
@@ -16,6 +16,7 @@ GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY')
 # Get credentials at: https://console.cloud.google.com/apis/credentials
 GOOGLE_CLIENT_ID     = os.environ.get('GOOGLE_CLIENT_ID', '')
 GOOGLE_CLIENT_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET', '')
+
 
 # ─── Email Notifications (Gmail SMTP) ─────────────────────────────
 # MAIL_SENDER: your Gmail address
