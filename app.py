@@ -30,17 +30,13 @@ from routes.books import books_bp
 from routes.members import members_bp
 from routes.issues import issues_bp
 from routes.dashboard import dashboard_bp
-from routes.oauth import oauth_bp, init_oauth
+
 
 app.register_blueprint(auth_bp)
 app.register_blueprint(books_bp)
 app.register_blueprint(members_bp)
 app.register_blueprint(issues_bp)
 app.register_blueprint(dashboard_bp)
-app.register_blueprint(oauth_bp)
-
-# ─── Initialize Google OAuth ──────────────────────────────────
-init_oauth(app)
 
 
 # ─── Error Handlers ──────────────────────────────────────────

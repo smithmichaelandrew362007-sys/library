@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS members (
     year VARCHAR(20) DEFAULT '',
     contact VARCHAR(20) DEFAULT '',
     email VARCHAR(255) DEFAULT '',
-    google_id VARCHAR(255) UNIQUE DEFAULT NULL,
+
     username VARCHAR(255) UNIQUE,
     password VARCHAR(255) NOT NULL DEFAULT '',
     role VARCHAR(20) DEFAULT 'student',

@@ -5,7 +5,7 @@ PyPDF2==3.0.1
 pytesseract==0.3.10
 Pillow
 google-generativeai
-Authlib
+
 requests
 python-dotenv
 Flask-Caching==2.3.0
