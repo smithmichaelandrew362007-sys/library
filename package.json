@@ -1,7 +1,7 @@
 {
-  "name": "libravault",
+  "name": "library",
   "version": "1.0.0",
-  "description": "LibraVault - Smart Library Management System",
+  "description": "Library - Smart Library Management System",
   "main": "electron/main.js",
   "scripts": {
     "web": "python app.py",

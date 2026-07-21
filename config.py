@@ -36,5 +36,5 @@ FINE_PER_DAY = 2                # Fine in ₹ per day after due date
 MAX_FINE = 100                  # Maximum fine cap in ₹
 
 # ─── App Metadata ────────────────────────────────────────────────────
-APP_NAME = "LibraVault"
+APP_NAME = "Library"
 APP_VERSION = "1.0.0"
