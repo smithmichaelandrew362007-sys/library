@@ -57,9 +57,14 @@
                         <i class="fas fa-check-circle"></i>
                     </div>
                     <h4 class="success-text" id="issueSuccessMsg">Book Issued Successfully!</h4>
-                    <button class="btn btn-outline-primary mt-3" onclick="resetIssue()">
-                        <i class="fas fa-plus"></i> Issue Another
-                    </button>
+                    <div class="d-flex gap-2 mt-3 justify-content-center flex-wrap">
+                        <button class="btn btn-primary" id="issueReceiptBtn" onclick="openIssueReceipt()">
+                            <i class="fas fa-receipt"></i> Download Receipt
+                        </button>
+                        <button class="btn btn-outline-primary" onclick="resetIssue()">
+                            <i class="fas fa-plus"></i> Issue Another
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -113,9 +118,14 @@
                     </div>
                     <h4 class="success-text" id="returnSuccessMsg">Book Returned!</h4>
                     <div class="fine-display" id="returnFineDisplay" style="display: none;"></div>
-                    <button class="btn btn-outline-primary mt-3" onclick="resetReturn()">
-                        <i class="fas fa-undo"></i> Return Another
-                    </button>
+                    <div class="d-flex gap-2 mt-3 justify-content-center flex-wrap">
+                        <button class="btn btn-primary" id="returnReceiptBtn" onclick="openReturnReceipt()">
+                            <i class="fas fa-receipt"></i> Download Receipt
+                        </button>
+                        <button class="btn btn-outline-primary" onclick="resetReturn()">
+                            <i class="fas fa-undo"></i> Return Another
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -148,8 +158,31 @@
         </table>
     </div>
 </div>
+
+<!-- Receipt Modal (shared) -->
+<div class="modal fade" id="receiptModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content glass-modal" id="receiptModalContent">
+            <div class="modal-header border-0">
+                <h5 class="modal-title"><i class="fas fa-receipt"></i> Transaction Receipt</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="receiptBody">
+                <div class="text-center"><i class="fas fa-spinner fa-spin"></i> Loading receipt...</div>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="printReceipt()">
+                    <i class="fas fa-print"></i> Print Receipt
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
+
 {% block scripts %}
+<script src="{{ url_for('static', filename='js/billing.js') }}"></script>
 <script src="{{ url_for('static', filename='js/issues.js') }}"></script>
 {% endblock %}

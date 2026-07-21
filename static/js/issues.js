@@ -3,8 +3,8 @@
  */
 
 // ─── State ─────────────────────────────────────────────────
-let issueState = { student: null, book: null };
-let returnState = { student: null, issue: null };
+let issueState = { student: null, book: null, lastIssueId: null };
+let returnState = { student: null, issue: null, lastIssueId: null };
 let currentReservationsData = [];
 
 // ═══════════════════════════════════════════════════════════
@@ -100,6 +100,9 @@ async function confirmIssue() {
             })
         });
 
+        // Store issue_id for receipt
+        issueState.lastIssueId = result.issue_id;
+
         // Show success
         document.getElementById('issueStep1').style.display = 'none';
         document.getElementById('issueStep2').style.display = 'none';
@@ -114,7 +117,7 @@ async function confirmIssue() {
 }
 
 function resetIssue() {
-    issueState = { student: null, book: null };
+    issueState = { student: null, book: null, lastIssueId: null };
     document.getElementById('issueStudentSearch').value = '';
     document.getElementById('issueStudentResult').style.display = 'none';
     document.getElementById('issueStep2').style.display = 'none';
@@ -210,6 +213,9 @@ async function confirmReturn() {
             body: JSON.stringify({ issue_id: returnState.issue.issue_id })
         });
 
+        // Store issue_id for receipt
+        returnState.lastIssueId = returnState.issue.issue_id;
+
         // Show success
         document.getElementById('returnStep1').style.display = 'none';
         document.getElementById('returnStep2').style.display = 'none';
@@ -235,7 +241,7 @@ async function confirmReturn() {
 }
 
 function resetReturn() {
-    returnState = { student: null, issue: null };
+    returnState = { student: null, issue: null, lastIssueId: null };
     document.getElementById('returnStudentSearch').value = '';
     document.getElementById('returnStudentResult').style.display = 'none';
     document.getElementById('returnStep2').style.display = 'none';
@@ -370,4 +376,22 @@ function exportReservationsPDF() {
     
     doc.save('pending_reservations.pdf');
     showToast('PDF exported successfully!', 'success');
+}
+
+// ─── Receipt Openers (used by issue/return success buttons) ──
+
+function openIssueReceipt() {
+    if (issueState.lastIssueId && typeof openReceiptModal === 'function') {
+        openReceiptModal(issueState.lastIssueId);
+    } else {
+        showToast('Receipt not available', 'warning');
+    }
+}
+
+function openReturnReceipt() {
+    if (returnState.lastIssueId && typeof openReceiptModal === 'function') {
+        openReceiptModal(returnState.lastIssueId);
+    } else {
+        showToast('Receipt not available', 'warning');
+    }
 }

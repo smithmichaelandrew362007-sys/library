@@ -67,6 +67,10 @@
                 <i class="fas fa-file-alt"></i>
                 <span>Reports</span>
             </a>
+            <a href="/billing" class="nav-item {% if request.endpoint == 'billing.billing_page' %}active{% endif %}" id="nav-billing">
+                <i class="fas fa-receipt"></i>
+                <span>Billing</span>
+            </a>
             {% else %}
             <a href="/books" class="nav-item {% if request.endpoint == 'books.books_page' %}active{% endif %}" id="nav-books">
                 <i class="fas fa-book"></i>

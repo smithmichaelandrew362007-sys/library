@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+
+{% block title %}Billing & Calculations — {{ app_name }}{% endblock %}
+{% block page_title %}Billing & Calculations{% endblock %}
+
+{% block content %}
+<!-- Billing Summary Cards -->
+<div class="stats-row" id="billingSummary">
+    <div class="stat-card glass-card">
+        <div class="stat-icon" style="--accent: #00b894;">
+            <i class="fas fa-rupee-sign"></i>
+        </div>
+        <div class="stat-info">
+            <span class="stat-value" id="totalCollected">₹0</span>
+            <span class="stat-label">Total Fines Collected</span>
+        </div>
+    </div>
+    <div class="stat-card glass-card">
+        <div class="stat-icon" style="--accent: #e17055;">
+            <i class="fas fa-exclamation-circle"></i>
+        </div>
+        <div class="stat-info">
+            <span class="stat-value" id="totalUnpaid">₹0</span>
+            <span class="stat-label">Unpaid Fines</span>
+        </div>
+    </div>
+    <div class="stat-card glass-card">
+        <div class="stat-icon" style="--accent: #6c5ce7;">
+            <i class="fas fa-exchange-alt"></i>
+        </div>
+        <div class="stat-info">
+            <span class="stat-value" id="todayTransactions">0</span>
+            <span class="stat-label">Transactions Today</span>
+        </div>
+    </div>
+    <div class="stat-card glass-card">
+        <div class="stat-icon" style="--accent: #fdcb6e;">
+            <i class="fas fa-percentage"></i>
+        </div>
+        <div class="stat-info">
+            <span class="stat-value" id="collectionRate">0%</span>
+            <span class="stat-label">Fine Collection Rate</span>
+        </div>
+    </div>
+</div>
+
+<!-- Business Rules Info -->
+<div class="billing-rules glass-card">
+    <h4><i class="fas fa-info-circle"></i> Library Fee Structure</h4>
+    <div class="rules-grid">
+        <div class="rule-item">
+            <span class="rule-label">Loan Period</span>
+            <span class="rule-value" id="ruleLoanDays">14 days</span>
+        </div>
+        <div class="rule-item">
+            <span class="rule-label">Fine Rate</span>
+            <span class="rule-value" id="ruleFineRate">₹2/day</span>
+        </div>
+        <div class="rule-item">
+            <span class="rule-label">Max Fine Cap</span>
+            <span class="rule-value" id="ruleMaxFine">₹100</span>
+        </div>
+        <div class="rule-item">
+            <span class="rule-label">Max Books</span>
+            <span class="rule-value">3 per student</span>
+        </div>
+    </div>
+</div>
+
+<!-- Filters & Actions -->
+<div class="action-bar glass-card" id="billingActions">
+    <div class="billing-filters">
+        <div class="filter-group">
+            <label class="filter-label"><i class="fas fa-filter"></i> Status</label>
+            <select class="form-control glass-input filter-select" id="filterStatus" onchange="loadTransactions()">
+                <option value="all">All Transactions</option>
+                <option value="issued">Currently Issued</option>
+                <option value="returned">Returned</option>
+                <option value="fines_unpaid">Unpaid Fines</option>
+                <option value="fines_paid">Paid Fines</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label class="filter-label"><i class="fas fa-calendar"></i> From</label>
+            <input type="date" class="form-control glass-input" id="filterDateFrom" onchange="loadTransactions()">
+        </div>
+        <div class="filter-group">
+            <label class="filter-label"><i class="fas fa-calendar"></i> To</label>
+            <input type="date" class="form-control glass-input" id="filterDateTo" onchange="loadTransactions()">
+        </div>
+    </div>
+    <div class="billing-actions-btns">
+        <button class="btn btn-outline-primary" onclick="exportBillingPDF()" id="exportBillingPdfBtn">
+            <i class="fas fa-file-pdf"></i> Export PDF
+        </button>
+    </div>
+</div>
+
+<!-- Transactions Table -->
+<div class="table-card glass-card" id="billingTableCard">
+    <div class="table-responsive">
+        <table class="table data-table" id="billingTable">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Book</th>
+                    <th>Student</th>
+                    <th>Roll No</th>
+                    <th>Issued</th>
+                    <th>Due</th>
+                    <th>Returned</th>
+                    <th>Days Late</th>
+                    <th>Fine</th>
+                    <th>Status</th>
+                    <th>Receipt</th>
+                </tr>
+            </thead>
+            <tbody id="billingBody">
+                <tr><td colspan="11" class="text-center"><i class="fas fa-spinner fa-spin"></i> Loading...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Receipt Modal -->
+<div class="modal fade" id="receiptModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content glass-modal" id="receiptModalContent">
+            <div class="modal-header border-0">
+                <h5 class="modal-title"><i class="fas fa-receipt"></i> Transaction Receipt</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="receiptBody">
+                <div class="text-center"><i class="fas fa-spinner fa-spin"></i> Loading receipt...</div>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="printReceipt()">
+                    <i class="fas fa-print"></i> Print Receipt
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/billing.js') }}"></script>
+{% endblock %}

@@ -2061,3 +2061,302 @@ select option, .filter-select option {
     background: var(--bg-glass-hover);
     color: var(--accent-primary);
 }
+
+/* ─── Billing Page ──────────────────────────────────────────── */
+.billing-rules {
+    padding: 20px 24px;
+    margin-bottom: 20px;
+}
+
+.billing-rules h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.billing-rules h4 i {
+    color: var(--accent-primary);
+}
+
+.rules-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px;
+}
+
+.rule-item {
+    display: flex;
+    flex-direction: column;
+    padding: 12px 16px;
+    background: var(--bg-glass);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-color);
+}
+
+.rule-label {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 500;
+}
+
+.rule-value {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--accent-primary);
+    margin-top: 2px;
+}
+
+.billing-filters {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    flex: 1;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.filter-label {
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.billing-filters .glass-input {
+    min-width: 140px;
+    font-size: 0.85rem;
+    padding: 6px 10px;
+}
+
+.billing-actions-btns {
+    display: flex;
+    gap: 8px;
+    align-items: flex-end;
+}
+
+/* ─── Status Badges ─────────────────────────────────────────── */
+.status-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: capitalize;
+    white-space: nowrap;
+}
+
+.status-issued {
+    background: rgba(108, 92, 231, 0.15);
+    color: var(--accent-secondary);
+}
+
+.status-returned {
+    background: rgba(0, 184, 148, 0.15);
+    color: var(--success);
+}
+
+.status-overdue {
+    background: rgba(225, 112, 85, 0.15);
+    color: var(--danger);
+}
+
+.status-reserved {
+    background: rgba(116, 185, 255, 0.15);
+    color: var(--info);
+}
+
+.status-fine-unpaid {
+    background: rgba(253, 203, 110, 0.15);
+    color: var(--warning);
+}
+
+.status-fine-paid {
+    background: rgba(0, 184, 148, 0.15);
+    color: var(--success);
+}
+
+/* ─── Receipt Modal (On-screen) ─────────────────────────────── */
+.receipt-printable {
+    max-width: 520px;
+    margin: 0 auto;
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 28px;
+    background: var(--bg-secondary);
+}
+
+.receipt-header {
+    text-align: center;
+    padding-bottom: 18px;
+    border-bottom: 2px dashed var(--border-color);
+    margin-bottom: 18px;
+}
+
+.receipt-logo {
+    font-size: 2.5rem;
+    color: var(--accent-primary);
+    margin-bottom: 8px;
+}
+
+.receipt-college {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+
+.receipt-system {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-bottom: 14px;
+}
+
+.receipt-type-badge {
+    display: inline-block;
+    padding: 6px 18px;
+    background: var(--accent-gradient);
+    color: #fff;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+}
+
+.receipt-meta {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 12px;
+}
+
+.receipt-section {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 8px;
+}
+
+.receipt-section-title {
+    font-weight: 600;
+    font-size: 0.82rem;
+    color: var(--accent-primary);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.receipt-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 0;
+    font-size: 0.9rem;
+}
+
+.receipt-row span:first-child {
+    color: var(--text-secondary);
+}
+
+.receipt-row span:last-child {
+    font-weight: 500;
+    color: var(--text-primary);
+    text-align: right;
+    max-width: 60%;
+    word-break: break-word;
+}
+
+.receipt-total {
+    font-size: 1.05rem;
+    font-weight: 700 !important;
+    padding: 8px 0;
+    border-top: 1px solid var(--border-color);
+    margin-top: 4px;
+}
+
+.receipt-total span:last-child {
+    font-weight: 700 !important;
+}
+
+.receipt-paid {
+    color: var(--success) !important;
+    font-weight: 600;
+}
+
+.receipt-unpaid {
+    color: var(--danger) !important;
+    font-weight: 600;
+}
+
+.receipt-footer {
+    text-align: center;
+    padding-top: 18px;
+    border-top: 2px dashed var(--border-color);
+    margin-top: 18px;
+}
+
+.receipt-footer p {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+
+.receipt-footer small {
+    color: var(--text-muted);
+    font-size: 0.75rem;
+}
+
+/* Glass modal override for receipt */
+.glass-modal {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+}
+
+.glass-modal .modal-header {
+    padding: 16px 24px;
+}
+
+.glass-modal .modal-body {
+    padding: 0 24px 16px 24px;
+}
+
+.glass-modal .modal-footer {
+    padding: 12px 24px;
+}
+
+@media (max-width: 600px) {
+    .billing-filters {
+        flex-direction: column;
+    }
+
+    .billing-filters .glass-input {
+        min-width: 100%;
+    }
+
+    .receipt-printable {
+        padding: 16px;
+    }
+
+    .receipt-row {
+        font-size: 0.82rem;
+    }
+
+    .rules-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
