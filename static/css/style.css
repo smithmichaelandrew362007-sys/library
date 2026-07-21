@@ -4,6 +4,7 @@
 
 /* ─── CSS Custom Properties ──────────────────────────────────── */
 :root {
+    color-scheme: dark;
     /* Colors */
     --bg-primary: #0a0e17;
     --bg-secondary: #111827;
@@ -50,6 +51,7 @@
 
 /* ─── Themes ─────────────────────────────────────────────── */
 [data-theme="white"] {
+    color-scheme: light;
     --bg-primary: #f8fafc;
     --bg-secondary: #ffffff;
     --bg-card: rgba(255, 255, 255, 0.9);
@@ -71,6 +73,7 @@
 }
 
 [data-theme="earthy"] {
+    color-scheme: dark;
     --bg-primary: #2d2a26;
     --bg-secondary: #3e3a35;
     --bg-card: rgba(62, 58, 53, 0.8);
@@ -157,10 +160,30 @@ body {
 }
 
 .glass-input:focus {
-    background: rgba(255, 255, 255, 0.08) !important;
-    border-color: var(--accent-primary) !important;
-    box-shadow: 0 0 0 3px rgba(var(--accent-primary-rgb), 0.15) !important;
-    outline: none !important;
+    background: rgba(255, 255, 255, 0.08);
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 4px var(--border-glow);
+    outline: none;
+}
+
+/* Date Input Calendar Icon Styling */
+input[type="date"]::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    opacity: 0.6;
+    transition: var(--transition-fast);
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator:hover {
+    opacity: 1;
+}
+
+[data-theme="white"] input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: none;
+}
+
+.btn {
+    padding: 10px 24px;
+    font-weight: 500;
 }
 
 .glass-input::placeholder {
