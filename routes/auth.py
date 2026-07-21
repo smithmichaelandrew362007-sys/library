@@ -126,6 +126,23 @@ def logout():
     flash('You have been logged out.', 'info')
     return redirect(url_for('auth.login'))
 
+@auth_bp.route('/check_username', methods=['POST'])
+def check_username():
+    """Check if a username is already taken."""
+    data = request.get_json()
+    username = data.get('username', '').strip()
+    if not username:
+        return jsonify({"available": False, "message": "Username is required"})
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT member_id FROM members WHERE username = %s AND status = 'active'", (username,))
+    existing = cursor.fetchone()
+    conn.close()
+    if existing:
+        return jsonify({"available": False, "message": "This username is already taken. Please choose a different one."})
+    return jsonify({"available": True, "message": "Username is available"})
+
+
 @auth_bp.route('/check_mobile', methods=['POST'])
 def check_mobile():
     data = request.get_json()

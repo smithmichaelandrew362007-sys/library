@@ -43,7 +43,11 @@
                     <div class="form-group" style="flex: 1;">
                         <label for="username" class="form-label"><i class="fas fa-user"></i> Username</label>
                         <input type="text" class="form-control glass-input" id="username" name="username"
-                               placeholder="Choose username" required autocomplete="username">
+                               placeholder="e.g. JohnDoe" required autocomplete="username">
+                        <div id="usernameStatus" class="username-status" style="display: none;">
+                            <i class="fas" id="usernameStatusIcon"></i>
+                            <span id="usernameStatusMsg"></span>
+                        </div>
                     </div>
                 </div>
 
@@ -90,5 +94,118 @@
     </div>
 </div>
 
+<script>
+(function() {
+    const usernameInput = document.getElementById('username');
+    const statusDiv = document.getElementById('usernameStatus');
+    const statusIcon = document.getElementById('usernameStatusIcon');
+    const statusMsg = document.getElementById('usernameStatusMsg');
+    const registerBtn = document.getElementById('registerBtn');
+    const registerForm = document.getElementById('registerForm');
+    let debounceTimer = null;
+    let usernameAvailable = false;
+
+    // Auto-capitalize the first letter of the username
+    usernameInput.addEventListener('input', function() {
+        let val = this.value;
+
+        // Auto-capitalize first character
+        if (val.length === 1) {
+            this.value = val.charAt(0).toUpperCase();
+        } else if (val.length > 1) {
+            // Ensure first letter is always uppercase, keep rest as-is
+            this.value = val.charAt(0).toUpperCase() + val.slice(1);
+        }
+
+        // Clear previous timer
+        if (debounceTimer) clearTimeout(debounceTimer);
+
+        const username = this.value.trim();
+
+        if (username.length === 0) {
+            statusDiv.style.display = 'none';
+            usernameInput.classList.remove('input-error', 'input-success');
+            usernameAvailable = false;
+            return;
+        }
+
+        if (username.length < 3) {
+            statusDiv.style.display = 'flex';
+            statusDiv.className = 'username-status username-info';
+            statusIcon.className = 'fas fa-info-circle';
+            statusMsg.textContent = 'Username must be at least 3 characters';
+            usernameInput.classList.remove('input-error', 'input-success');
+            usernameInput.classList.add('input-error');
+            usernameAvailable = false;
+            return;
+        }
+
+        // Show checking indicator
+        statusDiv.style.display = 'flex';
+        statusDiv.className = 'username-status username-checking';
+        statusIcon.className = 'fas fa-spinner fa-spin';
+        statusMsg.textContent = 'Checking availability...';
+        usernameInput.classList.remove('input-error', 'input-success');
+
+        // Debounce the API call (400ms after user stops typing)
+        debounceTimer = setTimeout(function() {
+            fetch('/check_username', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: username })
+            })
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                if (data.available) {
+                    statusDiv.className = 'username-status username-success';
+                    statusIcon.className = 'fas fa-check-circle';
+                    statusMsg.textContent = 'Username is available!';
+                    usernameInput.classList.remove('input-error');
+                    usernameInput.classList.add('input-success');
+                    usernameAvailable = true;
+                } else {
+                    statusDiv.className = 'username-status username-error';
+                    statusIcon.className = 'fas fa-exclamation-triangle';
+                    statusMsg.textContent = data.message;
+                    usernameInput.classList.remove('input-success');
+                    usernameInput.classList.add('input-error');
+                    usernameAvailable = false;
+                }
+            })
+            .catch(function() {
+                statusDiv.style.display = 'none';
+                usernameInput.classList.remove('input-error', 'input-success');
+                usernameAvailable = true; // Allow form submit on network error
+            });
+        }, 400);
+    });
+
+    // Prevent form submission if username is taken
+    registerForm.addEventListener('submit', function(e) {
+        const username = usernameInput.value.trim();
+        if (username.length < 3) {
+            e.preventDefault();
+            statusDiv.style.display = 'flex';
+            statusDiv.className = 'username-status username-error';
+            statusIcon.className = 'fas fa-exclamation-triangle';
+            statusMsg.textContent = 'Username must be at least 3 characters';
+            usernameInput.classList.add('input-error');
+            usernameInput.focus();
+            return;
+        }
+        if (!usernameAvailable) {
+            e.preventDefault();
+            usernameInput.focus();
+            // Shake the username input for visual feedback
+            usernameInput.classList.add('shake');
+            setTimeout(function() {
+                usernameInput.classList.remove('shake');
+            }, 500);
+            return;
+        }
+    });
+})();
+</script>
 
 {% endblock %}
+

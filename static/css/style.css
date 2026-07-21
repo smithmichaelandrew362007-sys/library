@@ -1791,9 +1791,16 @@ body {
     }
     
     .login-right {
-        padding: 20px;
+        flex: 1;
+        padding: 16px;
         background: var(--bg-primary);
         box-shadow: none;
+        min-height: 100vh;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow-y: auto;
     }
     
     .mobile-logo-section {
@@ -1803,7 +1810,147 @@ body {
     .desktop-form-header {
         display: none;
     }
+
+    /* Compact mobile login to prevent scrolling */
+    .login-right .login-container {
+        max-width: 100%;
+        width: 100%;
+    }
+
+    .login-right .login-card {
+        padding: 20px 16px;
+    }
+
+    .login-right .mobile-logo-section .logo-icon {
+        width: 48px;
+        height: 48px;
+        font-size: 1.4rem;
+        margin-bottom: 10px !important;
+    }
+
+    .login-right .mobile-logo-section h1.login-title {
+        font-size: 1.2rem !important;
+        line-height: 1.3 !important;
+        margin-bottom: 6px !important;
+    }
+
+    .login-right .mobile-logo-section .login-subtitle {
+        font-size: 0.95rem !important;
+    }
+
+    .login-right .mobile-logo-section .thirukkural-box {
+        margin-top: 10px !important;
+        margin-bottom: 16px !important;
+        padding: 10px !important;
+    }
+
+    .login-right .mobile-logo-section .thirukkural-box p:first-child {
+        font-size: 0.9rem !important;
+        margin-bottom: 4px !important;
+    }
+
+    .login-right .mobile-logo-section .thirukkural-box p:last-child {
+        font-size: 0.78rem !important;
+    }
+
+    .login-right .role-toggle-container {
+        margin-bottom: 14px !important;
+        padding: 3px !important;
+    }
+
+    .login-right .role-toggle-container button {
+        padding: 6px !important;
+        font-size: 0.88rem;
+    }
+
+    .login-right .login-form .form-group {
+        margin-bottom: 12px;
+    }
+
+    .login-right .login-form .form-label {
+        font-size: 0.8rem;
+        margin-bottom: 4px;
+    }
+
+    .login-right .login-form .glass-input {
+        padding: 8px 12px;
+        font-size: 0.9rem;
+    }
+
+    .login-right .btn-login {
+        padding: 10px !important;
+        margin-top: 4px;
+        font-size: 0.95rem;
+    }
+
+    .login-right .auth-switch {
+        margin-top: 12px;
+        font-size: 0.85rem;
+    }
+
+    .login-right .theme-switcher {
+        margin-bottom: 6px !important;
+    }
 }
+
+/* ─── Username Availability Status ──────────────────────────── */
+.username-status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 6px;
+    padding: 6px 10px;
+    border-radius: var(--radius-sm);
+    font-size: 0.8rem;
+    font-weight: 500;
+    animation: cascadeFadeUp 0.25s ease-out;
+}
+
+.username-checking {
+    color: var(--text-secondary);
+    background: var(--bg-glass);
+}
+
+.username-success {
+    color: var(--success);
+    background: rgba(0, 184, 148, 0.1);
+    border: 1px solid rgba(0, 184, 148, 0.25);
+}
+
+.username-error {
+    color: var(--danger);
+    background: rgba(225, 112, 85, 0.1);
+    border: 1px solid rgba(225, 112, 85, 0.25);
+}
+
+.username-info {
+    color: var(--info);
+    background: rgba(116, 185, 255, 0.1);
+    border: 1px solid rgba(116, 185, 255, 0.25);
+}
+
+/* Input border color states */
+.glass-input.input-error {
+    border-color: var(--danger) !important;
+    box-shadow: 0 0 0 2px rgba(225, 112, 85, 0.15);
+}
+
+.glass-input.input-success {
+    border-color: var(--success) !important;
+    box-shadow: 0 0 0 2px rgba(0, 184, 148, 0.15);
+}
+
+/* Shake animation for validation error */
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
+    20%, 40%, 60%, 80% { transform: translateX(4px); }
+}
+
+.shake {
+    animation: shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+}
+
 
 
 .auth-switch {
