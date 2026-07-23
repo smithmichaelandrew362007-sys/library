@@ -36,8 +36,35 @@ document.addEventListener('DOMContentLoaded', function() {
             const theme = this.getAttribute('data-set-theme');
             document.documentElement.setAttribute('data-theme', theme);
             localStorage.setItem('libravault_theme', theme);
+            
+            // Toggle flatpickr dark theme based on selected theme
+            const fpTheme = document.getElementById('flatpickr-theme');
+            if (fpTheme) {
+                if (theme === 'white') {
+                    fpTheme.disabled = true;
+                } else {
+                    fpTheme.disabled = false;
+                }
+            }
         });
     });
+
+    // Initialize Flatpickr for date inputs
+    if (typeof flatpickr !== 'undefined') {
+        flatpickr("input[type='date']", {
+            dateFormat: "Y-m-d",
+            altInput: true,
+            altFormat: "F j, Y",
+            allowInput: true
+        });
+        
+        // Initial theme setup for flatpickr
+        const savedTheme = localStorage.getItem('libravault_theme') || 'black';
+        const fpTheme = document.getElementById('flatpickr-theme');
+        if (fpTheme && savedTheme === 'white') {
+            fpTheme.disabled = true;
+        }
+    }
 });
 
 // ─── Toast Notification System ─────────────────────────────
