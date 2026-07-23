@@ -100,21 +100,15 @@
                                placeholder="Enter your username" autocomplete="on" required>
                     </div>
 
-                    <div class="form-group animate-fade-up" id="mobileGroup" style="animation-delay: 0.4s;">
-                        <label for="mobile" class="form-label">
-                            <i class="fas fa-phone"></i> Mobile Number
-                        </label>
-                        <input type="tel" class="form-control glass-input" id="mobile" name="mobile"
-                               placeholder="Enter your registered mobile number" required>
-                    </div>
 
-                    <div class="form-group animate-fade-up" id="passwordGroup" style="display: none; animation-delay: 0.4s;">
+
+                    <div class="form-group animate-fade-up" id="passwordGroup" style="animation-delay: 0.4s;">
                         <label for="password" class="form-label">
                             <i class="fas fa-lock"></i> Password
                         </label>
                         <div class="password-wrapper">
                             <input type="password" class="form-control glass-input" id="password" name="password"
-                                   placeholder="Enter your password" autocomplete="current-password">
+                                   placeholder="Enter your password" autocomplete="current-password" required>
                             <button type="button" class="password-toggle" id="passwordToggle" aria-label="Toggle password visibility">
                                 <i class="fas fa-eye"></i>
                             </button>
@@ -169,13 +163,11 @@ document.getElementById('btnStudentLogin').addEventListener('click', function() 
     adminBtn.style.color = 'var(--text-secondary)';
     
     document.getElementById('loginRole').value = 'student';
-    document.getElementById('passwordGroup').style.display = 'none';
-    document.getElementById('password').removeAttribute('required');
     
-    document.getElementById('mobileGroup').style.display = 'block';
-    document.getElementById('mobile').setAttribute('required', 'required');
     document.getElementById('usernameGroup').style.display = 'block';
     document.getElementById('username').setAttribute('required', 'required');
+    document.getElementById('passwordGroup').style.display = 'block';
+    document.getElementById('password').setAttribute('required', 'required');
 
 
     document.getElementById('signupText').innerHTML = 'Don\'t have an account? <a href="/register">Sign up</a>';
@@ -194,13 +186,11 @@ document.getElementById('btnAdminLogin').addEventListener('click', function() {
     studentBtn.style.color = 'var(--text-secondary)';
     
     document.getElementById('loginRole').value = 'admin';
-    document.getElementById('passwordGroup').style.display = 'block';
-    document.getElementById('password').setAttribute('required', 'required');
     
-    document.getElementById('mobileGroup').style.display = 'none';
-    document.getElementById('mobile').removeAttribute('required');
     document.getElementById('usernameGroup').style.display = 'block';
     document.getElementById('username').setAttribute('required', 'required');
+    document.getElementById('passwordGroup').style.display = 'block';
+    document.getElementById('password').setAttribute('required', 'required');
 
 
     document.getElementById('signupText').innerHTML = 'New Admin? <a href="/admin-register">Create an account</a>';

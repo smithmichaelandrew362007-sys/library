@@ -25,14 +25,14 @@ function renderMessages(messages) {
     }
     
     list.innerHTML = messages.map(m => `
-        <div class="card mb-3 ${m.is_read ? 'bg-light' : ''}" style="border-left: 4px solid ${m.is_read ? '#ccc' : 'var(--accent-primary)'};">
-            <div class="card-body d-flex flex-column justify-content-center align-items-center text-center" style="min-height: 120px;">
-                <div class="w-100 d-flex justify-content-between align-items-center mb-3">
-                    <h6 class="card-title mb-0 text-muted">From: ${m.sender_name}</h6>
+        <div class="card mb-2 glass-card" style="border-left: 4px solid ${m.is_read ? '#ccc' : 'var(--accent-primary)'}; color: var(--text-primary); ${m.is_read ? 'opacity: 0.7;' : ''}">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h6 class="card-title mb-0" style="color: var(--text-primary);">From: ${m.sender_name}</h6>
                     <small class="text-muted">${m.sent_at}</small>
                 </div>
-                <p class="card-text fs-5 w-100" style="margin-top: auto; margin-bottom: auto;">${m.message}</p>
-                ${!m.is_read ? `<button class="btn btn-sm btn-outline-primary mt-3" onclick="markRead(${m.message_id})">Mark as Read</button>` : ''}
+                <p class="card-text">${m.message}</p>
+                ${!m.is_read ? `<button class="btn btn-sm btn-outline-primary" onclick="markRead(${m.message_id})">Mark as Read</button>` : ''}
             </div>
         </div>
     `).join('');

@@ -16,10 +16,6 @@ def get_all_members(role=None):
         cursor.execute("SELECT * FROM members ORDER BY name")
     members = cursor.fetchall()
     conn.close()
-    # Remove password from results
-    for m in members:
-        if isinstance(m, dict):
-            m.pop('password', None)
     return members
 
 
@@ -30,8 +26,6 @@ def get_member(member_id):
     cursor.execute("SELECT * FROM members WHERE member_id = %s", (member_id,))
     member = cursor.fetchone()
     conn.close()
-    if member and isinstance(member, dict):
-        member.pop('password', None)
     return member
 
 
@@ -42,8 +36,6 @@ def get_member_by_roll_no(roll_no):
     cursor.execute("SELECT * FROM members WHERE roll_no = %s", (roll_no,))
     member = cursor.fetchone()
     conn.close()
-    if member and isinstance(member, dict):
-        member.pop('password', None)
     return member
 
 
@@ -60,9 +52,6 @@ def search_members(query):
     )
     members = cursor.fetchall()
     conn.close()
-    for m in members:
-        if isinstance(m, dict):
-            m.pop('password', None)
     return members
 
 
@@ -75,11 +64,13 @@ def authenticate(username, password, role='admin'):
     conn.close()
 
     if member:
-        # If logging in as student and member is actually a student, skip password check
+        # If logging in as student and member is actually a student, check plaintext password
         if role == 'student' and member['role'] == 'student':
-            if isinstance(member, dict):
-                member.pop('password', None)
-            return member
+            # Check either plaintext (new) or hash (fallback for old data)
+            if member['password'] == password or check_password_hash(member['password'], password):
+                if isinstance(member, dict):
+                    member.pop('password', None)
+                return member
         # Otherwise, check password
         elif check_password_hash(member['password'], password):
             if isinstance(member, dict):
@@ -92,14 +83,19 @@ def register_member(data):
     """Register a new member with hashed password."""
     conn = get_db()
     cursor = conn.cursor()
-    hashed_pw = generate_password_hash(data.get('password', 'student123'))
+    # For admin, we use a hashed password. For students, we store it in plaintext as requested.
+    if data.get('role', 'student') == 'admin':
+        pw = generate_password_hash(data.get('password', 'admin123'))
+    else:
+        pw = data.get('password', 'student123')
+        
     try:
         cursor.execute(
             """INSERT INTO members (name, roll_no, department, year, contact, email, username, password, role, status)
                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, 'active') RETURNING member_id""",
             (data['name'], data['roll_no'], data.get('department', ''),
              data.get('year', ''), data.get('contact', ''), data.get('email', ''),
-             data['username'], hashed_pw, data.get('role', 'student'))
+             data['username'], pw, data.get('role', 'student'))
         )
         result = cursor.fetchone()
         member_id = result['member_id'] if result else None

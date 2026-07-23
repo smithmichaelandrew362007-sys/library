@@ -35,6 +35,7 @@ async function loadMembers() {
                 <td>${m.department || '—'}</td>
                 <td>${m.year || '—'}</td>
                 <td>${m.username}</td>
+                <td>${m.password || '—'}</td>
                 <td><span class="status-badge status-${m.status}">${m.status}</span></td>
                 <td>
                     <div class="table-actions">
@@ -231,11 +232,12 @@ function exportMembersPDF() {
         m.department || '—',
         m.year || '—',
         m.username,
+        m.password || '—',
         m.status
     ]);
     
     doc.autoTable({
-        head: [['Name', 'Roll No', 'Department', 'Year', 'Username', 'Status']],
+        head: [['Name', 'Roll No', 'Department', 'Year', 'Username', 'Password', 'Status']],
         body: rows,
         startY: 35,
         styles: { fontSize: 8 },

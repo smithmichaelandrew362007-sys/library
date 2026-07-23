@@ -96,10 +96,11 @@ def init_database():
             # Now hash the passwords properly for seeded users
             from werkzeug.security import generate_password_hash
             admin_hash = generate_password_hash('admin123')
-            student_hash = generate_password_hash('student123')
+            # Student passwords are stored in plain text per user request
+            student_pw = 'student123'
 
             cursor.execute("UPDATE members SET password = %s WHERE role = 'admin'", (admin_hash,))
-            cursor.execute("UPDATE members SET password = %s WHERE role = 'student'", (student_hash,))
+            cursor.execute("UPDATE members SET password = %s WHERE role = 'student'", (student_pw,))
 
             print("[OK] PostgreSQL Database initialized with schema and seed data.")
         else:

@@ -41,14 +41,10 @@ def login():
                 flash('Invalid admin credentials.', 'danger')
         else:
             # Student login
-            mobile = request.form.get('mobile')
             username = request.form.get('username')
+            password = request.form.get('password')
             
-            conn = get_db()
-            cursor = conn.cursor()
-            cursor.execute("SELECT * FROM members WHERE username = %s AND contact = %s AND role = 'student' AND status = 'active'", (username, mobile))
-            member = cursor.fetchone()
-            conn.close()
+            member = authenticate(username, password, role='student')
 
             if member:
                 session['member_id'] = member['member_id']
@@ -57,7 +53,7 @@ def login():
                 flash('Login successful!', 'success')
                 return redirect(url_for('dashboard.index'))
             else:
-                flash('Invalid mobile number or username.', 'danger')
+                flash('Invalid username or password.', 'danger')
 
     return render_template('login.html')
 
@@ -72,10 +68,11 @@ def register():
             'year': request.form.get('year'),
             'contact': request.form.get('contact'),
             'email': request.form.get('email', ''),
+            'password': request.form.get('password'),
             'role': 'student'
         }
         
-        if not data['name'] or not data['roll_no'] or not data['username'] or not data['contact']:
+        if not data['name'] or not data['roll_no'] or not data['username'] or not data['contact'] or not data['password']:
             flash('Please fill in all required fields.', 'danger')
             return render_template('register.html')
             
