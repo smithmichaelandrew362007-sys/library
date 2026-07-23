@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Toggle flatpickr dark theme based on selected theme
             const fpTheme = document.getElementById('flatpickr-theme');
             if (fpTheme) {
-                if (theme === 'white') {
+                if (theme === 'white' || theme === 'apple-glass') {
                     fpTheme.disabled = true;
                 } else {
                     fpTheme.disabled = false;
@@ -61,7 +61,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Initial theme setup for flatpickr
         const savedTheme = localStorage.getItem('libravault_theme') || 'black';
         const fpTheme = document.getElementById('flatpickr-theme');
-        if (fpTheme && savedTheme === 'white') {
+        if (fpTheme && (savedTheme === 'white' || savedTheme === 'apple-glass')) {
             fpTheme.disabled = true;
         }
     }
