@@ -1,0 +1,22 @@
+# Flutter / Dart build artifacts
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+build/
+
+# Android specific
+android/app/debug/
+android/app/profile/
+android/app/release/
+android/.gradle
+android/captures/
+android/local.properties
+
+# Symbols & Gradle
+*.mode1v3
+*.mode2v3
+*.moved-aside
+*.pbxuser
+*.perspectivev3

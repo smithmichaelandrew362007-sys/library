@@ -3,11 +3,6 @@ dist/
 build/ 
 .env 
 win-unpacked/ 
-dist/ 
-build/ 
 *.zip 
-build/ 
-dist/ 
 server-dist/ 
-*.zip 
-win-unpacked/ 
+.idea/

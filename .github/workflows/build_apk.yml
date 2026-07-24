@@ -1,0 +1,93 @@
+name: Build & Release Flutter APK
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      custom_tag:
+        description: 'Optional custom release tag (e.g. v1.1.0). Leave empty for auto-increment patch (e.g. v1.0.1)'
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    name: Build & Release Android APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Calculate Next Version Tag
+        id: versioning
+        run: |
+          if [ -n "${{ github.event.inputs.custom_tag }}" ]; then
+            NEW_TAG="${{ github.event.inputs.custom_tag }}"
+            NEW_VERSION="${NEW_TAG#v}"
+          else
+            LATEST_TAG=$(git tag -l "v*" | sort -V | tail -n1)
+            if [ -z "$LATEST_TAG" ]; then
+              NEW_VERSION="1.0.0"
+              NEW_TAG="v1.0.0"
+            else
+              RAW_VER="${LATEST_TAG#v}"
+              IFS='.' read -r MAJOR MINOR PATCH <<< "$RAW_VER"
+              PATCH=$((PATCH + 1))
+              NEW_VERSION="${MAJOR}.${MINOR}.${PATCH}"
+              NEW_TAG="v${NEW_VERSION}"
+            fi
+          fi
+
+          echo "Calculated New Version: $NEW_VERSION"
+          echo "Calculated New Tag: $NEW_TAG"
+          echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
+          echo "NEW_TAG=$NEW_TAG" >> $GITHUB_ENV
+
+      - name: Install Dependencies
+        run: |
+          cd mobile
+          flutter pub get
+
+      - name: Build APK with Embedded Version
+        run: |
+          cd mobile
+          flutter build apk --release --build-name=${{ env.NEW_VERSION }}
+
+      - name: Push Git Tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "${{ env.NEW_TAG }}" -m "Automated Release ${{ env.NEW_TAG }}"
+          git push origin "${{ env.NEW_TAG }}"
+
+      - name: Create GitHub Release & Upload APK
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.NEW_TAG }}
+          name: Release ${{ env.NEW_TAG }}
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          files: |
+            mobile/build/app/outputs/flutter-apk/app-release.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
