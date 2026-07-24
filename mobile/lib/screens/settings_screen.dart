@@ -19,7 +19,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   void initState() {
-    super.initState() ;
+    super.initState();
     _loadAppInfo();
   }
 
@@ -119,47 +119,45 @@ class _SettingsScreenState extends State<SettingsScreen> {
             color: theme.colorScheme.surfaceVariant.withOpacity(0.4),
             child: Padding(
               padding: const EdgeInsets.all(20.0),
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.primaryContainer,
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      child: Icon(
-                        Icons.phone_android_rounded,
-                        color: theme.colorScheme.primary,
-                        size: 28,
-                      ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.primaryContainer,
+                      borderRadius: BorderRadius.circular(14),
                     ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'LibraVault Mobile',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Version $_appVersion${_buildNumber.isNotEmpty ? ' ($_buildNumber)' : ''}',
-                            style: TextStyle(
-                              color: theme.colorScheme.onSurfaceVariant,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ],
-                      ),
+                    child: Icon(
+                      Icons.phone_android_rounded,
+                      color: theme.colorScheme.primary,
+                      size: 28,
                     ),
-                  ],
-                ),
-              ],
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'LibraVault Mobile',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Version $_appVersion${_buildNumber.isNotEmpty ? ' ($_buildNumber)' : ''}',
+                          style: TextStyle(
+                            color: theme.colorScheme.onSurfaceVariant,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
 
@@ -167,12 +165,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-              color: Colors.grey,
+            child: Text(
+              'APP UPDATES & RELEASES',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey,
+              ),
             ),
-            child: Text('APP UPDATES & RELEASES'),
           ),
 
           // Update Check Section
@@ -219,12 +219,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-              color: Colors.grey,
+            child: Text(
+              'ABOUT & BUILD',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey,
+              ),
             ),
-            child: Text('ABOUT & BUILD'),
           ),
 
           Card(

@@ -151,7 +151,9 @@ class HomeScreen extends StatelessWidget {
               ),
               child: Padding(
                 padding: const EdgeInsets.all(18.0),
-                children: [
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                   Row(
                     children: [
                       Container(
@@ -205,7 +207,8 @@ class HomeScreen extends StatelessWidget {
                       ),
                     ),
                   ),
-                ],
+                  ],
+                ),
               ),
             ),
           ],
