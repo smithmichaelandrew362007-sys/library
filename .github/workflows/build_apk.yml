@@ -62,6 +62,11 @@ jobs:
           echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
           echo "NEW_TAG=$NEW_TAG" >> $GITHUB_ENV
 
+      - name: Generate Official Android Wrapper & Platform Files
+        run: |
+          cd mobile
+          flutter create --platforms=android --org com.libravault .
+
       - name: Install Dependencies
         run: |
           cd mobile
