@@ -72,12 +72,16 @@ jobs:
           cd mobile
           flutter build apk --release --build-name=${{ env.NEW_VERSION }} > flutter_build.log 2>&1 || (cat flutter_build.log && exit 1)
 
-      - name: Upload Build Log on Failure
+      - name: Push Build Log to Debug Branch
         if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: flutter_build_error_log
-          path: mobile/flutter_build.log
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -b debug-build-log-${{ github.run_id }}
+          cp mobile/flutter_build.log ./
+          git add flutter_build.log
+          git commit -m "Add build log for run ${{ github.run_id }}"
+          git push origin debug-build-log-${{ github.run_id }}
 
       - name: Create Git Tag & Push
         run: |
