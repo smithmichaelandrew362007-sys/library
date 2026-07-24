@@ -72,14 +72,7 @@ jobs:
           cd mobile
           flutter build apk --release --build-name=${{ env.NEW_VERSION }}
 
-      - name: Push Git Tag
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git tag -a "${{ env.NEW_TAG }}" -m "Automated Release ${{ env.NEW_TAG }}"
-          git push origin "${{ env.NEW_TAG }}"
-
-      - name: Create GitHub Release & Upload APK
+      - name: Create GitHub Release & Tag Automatically
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ env.NEW_TAG }}
