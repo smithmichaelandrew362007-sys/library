@@ -26,10 +26,10 @@ class LibraVaultApp extends StatelessWidget {
           elevation: 0,
           centerTitle: false,
         ),
-        cardTheme: CardTheme(
-          color: const Color(0xFF1E293B),
+        cardTheme: const CardThemeData(
+          color: Color(0xFF1E293B),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.all(Radius.circular(16)),
           ),
         ),
       ),

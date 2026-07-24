@@ -80,7 +80,7 @@ class HomeScreen extends StatelessWidget {
                   const Text(
                     'Welcome to your Library Management System Mobile App.',
                     style: TextStyle(
-                      color: Colors.white90,
+                      color: Colors.white70,
                       fontSize: 15,
                     ),
                   ),
