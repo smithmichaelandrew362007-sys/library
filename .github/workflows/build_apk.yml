@@ -70,7 +70,7 @@ jobs:
       - name: Patch compileSdk to 36
         run: |
           sed -i 's/compileSdk = flutter.compileSdkVersion/compileSdk = 36/' mobile/android/app/build.gradle.kts || true
-          sed -i 's/targetSdk = flutter.targetSdkVersion/targetSdk = 35/' mobile/android/app/build.gradle.kts || true
+          sed -i 's/targetSdk = flutter.targetSdkVersion/targetSdk = 36/' mobile/android/app/build.gradle.kts || true
           echo "--- app/build.gradle.kts after patch ---"
           cat mobile/android/app/build.gradle.kts
 
