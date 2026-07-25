@@ -1,7 +1,5 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:ota_update/ota_update.dart';
 import '../services/update_service.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -116,7 +114,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               borderRadius: BorderRadius.circular(16),
             ),
             elevation: 0,
-            color: theme.colorScheme.surfaceVariant.withOpacity(0.4),
+            color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.4),
             child: Padding(
               padding: const EdgeInsets.all(20.0),
               child: Row(
@@ -290,77 +288,32 @@ class _UpdateDialog extends StatefulWidget {
 }
 
 class _UpdateDialogState extends State<_UpdateDialog> {
-  bool _isDownloading = false;
-  String _downloadProgressText = '0%';
-  double _progressPercentage = 0.0;
+  bool _isOpening = false;
   String? _downloadError;
-  StreamSubscription<OtaEvent>? _otaSubscription;
 
-  @override
-  void dispose() {
-    _otaSubscription?.cancel();
-    super.dispose();
-  }
-
-  void _startDownload() {
+  Future<void> _startDownload() async {
     setState(() {
-      _isDownloading = true;
+      _isOpening = true;
       _downloadError = null;
-      _downloadProgressText = 'Starting download...';
-      _progressPercentage = 0.0;
     });
 
     try {
-      _otaSubscription = UpdateService.downloadAndInstallApk(widget.updateInfo.apkUrl)
-          .listen((OtaEvent event) {
-        if (!mounted) return;
-
+      // Open APK URL in the browser — Android will prompt to install it
+      final opened = await UpdateService.openApkDownload(widget.updateInfo.apkUrl);
+      if (!mounted) return;
+      if (opened) {
+        Navigator.of(context).pop();
+      } else {
         setState(() {
-          switch (event.status) {
-            case OtaStatus.DOWNLOADING:
-              final value = double.tryParse(event.value ?? '0') ?? 0.0;
-              _progressPercentage = value / 100.0;
-              _downloadProgressText = '${value.toInt()}%';
-              break;
-            case OtaStatus.INSTALLING:
-              _downloadProgressText = 'Opening installer...';
-              _progressPercentage = 1.0;
-              break;
-            case OtaStatus.ALREADY_RUNNING_ERROR:
-              _downloadError = 'An update process is already running.';
-              _isDownloading = false;
-              break;
-            case OtaStatus.PERMISSION_NOT_GRANTED_ERROR:
-              _downloadError = 'Permission denied to install unknown apps.';
-              _isDownloading = false;
-              break;
-            case OtaStatus.INTERNAL_ERROR:
-              _downloadError = 'Internal error during download: ${event.value}';
-              _isDownloading = false;
-              break;
-            case OtaStatus.DOWNLOAD_ERROR:
-              _downloadError = 'Download failed. Please check internet connection.';
-              _isDownloading = false;
-              break;
-            case OtaStatus.CHECKSUM_ERROR:
-              _downloadError = 'Checksum error on downloaded APK.';
-              _isDownloading = false;
-              break;
-            default:
-              break;
-          }
+          _isOpening = false;
+          _downloadError = 'Could not open download link. Try Web Download instead.';
         });
-      }, onError: (error) {
-        if (!mounted) return;
-        setState(() {
-          _isDownloading = false;
-          _downloadError = 'Download error: $error';
-        });
-      });
+      }
     } catch (e) {
+      if (!mounted) return;
       setState(() {
-        _isDownloading = false;
-        _downloadError = 'Failed to initiate update: $e';
+        _isOpening = false;
+        _downloadError = 'Error: $e';
       });
     }
   }
@@ -369,11 +322,11 @@ class _UpdateDialogState extends State<_UpdateDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      title: Row(
+      title: const Row(
         children: [
-          const Icon(Icons.new_releases_rounded, color: Colors.indigoAccent, size: 28),
-          const SizedBox(width: 10),
-          const Text('New Update Available'),
+          Icon(Icons.new_releases_rounded, color: Colors.indigoAccent, size: 28),
+          SizedBox(width: 10),
+          Text('New Update Available'),
         ],
       ),
       content: SingleChildScrollView(
@@ -384,7 +337,7 @@ class _UpdateDialogState extends State<_UpdateDialog> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.4),
+                color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.4),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
                   color: Colors.indigoAccent.withOpacity(0.3),
@@ -437,7 +390,7 @@ class _UpdateDialogState extends State<_UpdateDialog> {
             ),
             const SizedBox(height: 14),
             const Text(
-              'Changelog / What\'s New:',
+              'What\'s New:',
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
             ),
             const SizedBox(height: 6),
@@ -445,7 +398,7 @@ class _UpdateDialogState extends State<_UpdateDialog> {
               width: double.infinity,
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.3),
+                color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.3),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Text(
@@ -453,25 +406,18 @@ class _UpdateDialogState extends State<_UpdateDialog> {
                 style: const TextStyle(fontSize: 13),
               ),
             ),
-            const SizedBox(height: 16),
-            if (_isDownloading) ...[
-              const Text(
-                'Downloading APK...',
-                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
-              ),
-              const SizedBox(height: 8),
-              LinearProgressIndicator(
-                value: _progressPercentage > 0 ? _progressPercentage : null,
-                borderRadius: BorderRadius.circular(8),
-                minHeight: 8,
-              ),
-              const SizedBox(height: 6),
-              Align(
-                alignment: Alignment.centerRight,
-                child: Text(
-                  _downloadProgressText,
-                  style: const TextStyle(fontSize: 12, color: Colors.grey),
-                ),
+            if (_isOpening) ...[
+              const SizedBox(height: 16),
+              const Row(
+                children: [
+                  SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                  SizedBox(width: 10),
+                  Text('Opening download...', style: TextStyle(fontSize: 13)),
+                ],
               ),
             ],
             if (_downloadError != null) ...[
@@ -485,42 +431,30 @@ class _UpdateDialogState extends State<_UpdateDialog> {
         ),
       ),
       actions: [
-        if (!_isDownloading) ...[
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Later'),
-          ),
-          if (widget.updateInfo.htmlUrl.isNotEmpty)
-            TextButton.icon(
-              icon: const Icon(Icons.open_in_browser_rounded, size: 16),
-              label: const Text('Web Download'),
-              onPressed: () {
-                UpdateService.openReleaseWebpage(widget.updateInfo.htmlUrl);
-              },
-            ),
-          ElevatedButton.icon(
-            icon: const Icon(Icons.download_rounded),
-            label: const Text('Update Now'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.indigoAccent,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
-            onPressed: _startDownload,
-          ),
-        ] else ...[
-          TextButton(
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Later'),
+        ),
+        if (widget.updateInfo.htmlUrl.isNotEmpty)
+          TextButton.icon(
+            icon: const Icon(Icons.open_in_browser_rounded, size: 16),
+            label: const Text('Web Download'),
             onPressed: () {
-              _otaSubscription?.cancel();
-              setState(() {
-                _isDownloading = false;
-              });
+              UpdateService.openReleaseWebpage(widget.updateInfo.htmlUrl);
             },
-            child: const Text('Cancel Download'),
           ),
-        ],
+        ElevatedButton.icon(
+          icon: const Icon(Icons.download_rounded),
+          label: const Text('Update Now'),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.indigoAccent,
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+          onPressed: _isOpening ? null : _startDownload,
+        ),
       ],
     );
   }

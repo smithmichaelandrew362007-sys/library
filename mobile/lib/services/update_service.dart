@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:ota_update/ota_update.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class UpdateInfo {
@@ -103,12 +102,14 @@ class UpdateService {
     return false;
   }
 
-  /// Download and launch native APK installer on Android
-  static Stream<OtaEvent> downloadAndInstallApk(String apkUrl) {
-    return OtaUpdate().execute(
-      apkUrl,
-      destinationFilename: 'libravault_update.apk',
-    );
+  /// Open APK download URL in external browser — Android will detect the .apk
+  /// and prompt the user to install it (requires "install unknown apps" permission).
+  static Future<bool> openApkDownload(String apkUrl) async {
+    final Uri uri = Uri.parse(apkUrl);
+    if (await canLaunchUrl(uri)) {
+      return await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
+    return false;
   }
 
   /// Open release page in external browser (fallback)
