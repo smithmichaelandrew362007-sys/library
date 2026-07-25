@@ -62,10 +62,11 @@ jobs:
       - name: Make Gradle Wrapper Executable
         run: chmod +x mobile/android/gradlew || true
 
-      - name: Install Flutter Dependencies
+      - name: Install Flutter Dependencies & Generate Icons
         run: |
           cd mobile
           flutter pub get
+          dart run flutter_launcher_icons || true
 
       - name: Patch compileSdk to 36
         run: |
