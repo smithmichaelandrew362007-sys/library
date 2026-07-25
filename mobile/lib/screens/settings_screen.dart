@@ -288,32 +288,40 @@ class _UpdateDialog extends StatefulWidget {
 }
 
 class _UpdateDialogState extends State<_UpdateDialog> {
-  bool _isOpening = false;
+  bool _isDownloading = false;
+  double _downloadProgress = 0.0;
+  String _progressText = '';
   String? _downloadError;
 
   Future<void> _startDownload() async {
     setState(() {
-      _isOpening = true;
+      _isDownloading = true;
+      _downloadProgress = 0.0;
+      _progressText = 'Starting download...';
       _downloadError = null;
     });
 
-    try {
-      // Open APK URL in the browser — Android will prompt to install it
-      final opened = await UpdateService.openApkDownload(widget.updateInfo.apkUrl);
-      if (!mounted) return;
-      if (opened) {
-        Navigator.of(context).pop();
-      } else {
+    final error = await UpdateService.downloadAndInstallApk(
+      widget.updateInfo.apkUrl,
+      onProgress: (progress, downloaded, total) {
+        if (!mounted) return;
         setState(() {
-          _isOpening = false;
-          _downloadError = 'Could not open download link. Try Web Download instead.';
+          _downloadProgress = progress;
+          final mbDown = (downloaded / (1024 * 1024)).toStringAsFixed(1);
+          final mbTotal = (total / (1024 * 1024)).toStringAsFixed(1);
+          _progressText = total > 0 ? '$mbDown MB / $mbTotal MB (${(progress * 100).toInt()}%)' : '$mbDown MB downloaded';
         });
-      }
-    } catch (e) {
-      if (!mounted) return;
+      },
+    );
+
+    if (!mounted) return;
+    if (error == null) {
+      // Success! Native Android installer opened over the app
+      Navigator.of(context).pop();
+    } else {
       setState(() {
-        _isOpening = false;
-        _downloadError = 'Error: $e';
+        _isDownloading = false;
+        _downloadError = error;
       });
     }
   }
@@ -406,18 +414,39 @@ class _UpdateDialogState extends State<_UpdateDialog> {
                 style: const TextStyle(fontSize: 13),
               ),
             ),
-            if (_isOpening) ...[
+            if (_isDownloading) ...[
               const SizedBox(height: 16),
-              const Row(
-                children: [
-                  SizedBox(
-                    width: 18,
-                    height: 18,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  ),
-                  SizedBox(width: 10),
-                  Text('Opening download...', style: TextStyle(fontSize: 13)),
-                ],
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.indigoAccent.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text('Downloading in-app...', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.indigoAccent)),
+                        Text('${(_downloadProgress * 100).toInt()}%', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.indigoAccent)),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    LinearProgressIndicator(
+                      value: _downloadProgress > 0 ? _downloadProgress : null,
+                      backgroundColor: Colors.indigoAccent.withOpacity(0.2),
+                      valueColor: const AlwaysStoppedAnimation<Color>(Colors.indigoAccent),
+                      minHeight: 6,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      _progressText,
+                      style: const TextStyle(fontSize: 11, color: Colors.grey),
+                    ),
+                  ],
+                ),
               ),
             ],
             if (_downloadError != null) ...[
@@ -453,7 +482,7 @@ class _UpdateDialogState extends State<_UpdateDialog> {
               borderRadius: BorderRadius.circular(10),
             ),
           ),
-          onPressed: _isOpening ? null : _startDownload,
+          onPressed: _isDownloading ? null : _startDownload,
         ),
       ],
     );

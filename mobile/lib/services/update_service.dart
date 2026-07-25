@@ -1,8 +1,11 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:open_filex/open_filex.dart';
 
 class UpdateInfo {
   final String currentVersion;
@@ -136,6 +139,57 @@ class UpdateService {
       } catch (_) {
         return false;
       }
+    }
+  }
+
+  /// Download APK directly inside the app with real-time stream progress,
+  /// and trigger Android's native installer popup upon completion.
+  static Future<String?> downloadAndInstallApk(
+    String apkUrl, {
+    required Function(double progress, int downloadedBytes, int totalBytes) onProgress,
+  }) async {
+    if (apkUrl.isEmpty) return 'No APK download URL provided.';
+    try {
+      final dir = await getExternalStorageDirectory() ?? await getTemporaryDirectory();
+      final filePath = '${dir.path}/libravault_update.apk';
+      final file = File(filePath);
+      if (await file.exists()) {
+        await file.delete();
+      }
+
+      final client = http.Client();
+      final request = http.Request('GET', Uri.parse(apkUrl));
+      final response = await client.send(request);
+
+      if (response.statusCode != 200) {
+        client.close();
+        return 'Server returned HTTP ${response.statusCode} while downloading APK.';
+      }
+
+      final int totalBytes = response.contentLength ?? 0;
+      int downloadedBytes = 0;
+      final sink = file.openWrite();
+
+      await response.stream.map((chunk) {
+        downloadedBytes += chunk.length;
+        if (totalBytes > 0) {
+          onProgress(downloadedBytes / totalBytes, downloadedBytes, totalBytes);
+        } else {
+          onProgress(0.5, downloadedBytes, totalBytes);
+        }
+        return chunk;
+      }).pipe(sink);
+
+      await sink.close();
+      client.close();
+
+      final result = await OpenFilex.open(filePath, type: 'application/vnd.android.package-archive');
+      if (result.type != ResultType.done) {
+        return 'Failed to open installer: ${result.message}';
+      }
+      return null; // Success!
+    } catch (e) {
+      return 'Download error: $e';
     }
   }
 }
