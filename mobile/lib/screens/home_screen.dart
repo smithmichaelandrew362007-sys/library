@@ -64,7 +64,7 @@ class _HomeScreenState extends State<HomeScreen> {
           },
           onWebResourceError: (WebResourceError error) {
             // Ignore minor resource errors (like missing favicons or ads)
-            if (error.isForMainFrame) {
+            if (error.isForMainFrame ?? true) {
               if (mounted) {
                 setState(() {
                   _hasError = true;
