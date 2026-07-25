@@ -75,14 +75,14 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         },
         destinations: const [
           NavigationDestination(
-            icon: Icon(Icons.home_outlined),
-            selectedIcon: Icon(Icons.home_rounded),
-            label: 'Home',
+            icon: Icon(Icons.library_books_outlined),
+            selectedIcon: Icon(Icons.library_books_rounded),
+            label: 'Library WebApp',
           ),
           NavigationDestination(
             icon: Icon(Icons.settings_outlined),
             selectedIcon: Icon(Icons.settings_rounded),
-            label: 'Settings',
+            label: 'Settings & OTA',
           ),
         ],
       ),
