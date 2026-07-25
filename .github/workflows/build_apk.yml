@@ -67,13 +67,19 @@ jobs:
           cd mobile
           flutter pub get
 
+      - name: Patch compileSdk to 36
+        run: |
+          sed -i 's/compileSdk = flutter.compileSdkVersion/compileSdk = 36/' mobile/android/app/build.gradle.kts || true
+          sed -i 's/targetSdk = flutter.targetSdkVersion/targetSdk = 35/' mobile/android/app/build.gradle.kts || true
+          echo "--- app/build.gradle.kts after patch ---"
+          cat mobile/android/app/build.gradle.kts
+
       - name: Build APK
         run: |
           cd mobile
           flutter build apk --release \
             --build-name=${{ env.NEW_VERSION }} \
-            --android-skip-build-dependency-validation \
-            --verbose > flutter_build.log 2>&1 || (tail -100 flutter_build.log && echo "=== APK search ===" && find /home/runner/work -name "*.apk" 2>/dev/null && exit 1)
+            --verbose > flutter_build.log 2>&1 || (tail -150 flutter_build.log && echo "=== APK search ===" && find /home/runner/work -name "*.apk" 2>/dev/null && exit 1)
 
       - name: Push Build Log to Debug Branch
         if: failure()
