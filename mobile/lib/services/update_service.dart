@@ -105,19 +105,37 @@ class UpdateService {
   /// Open APK download URL in external browser — Android will detect the .apk
   /// and prompt the user to install it (requires "install unknown apps" permission).
   static Future<bool> openApkDownload(String apkUrl) async {
+    if (apkUrl.isEmpty) return false;
     final Uri uri = Uri.parse(apkUrl);
-    if (await canLaunchUrl(uri)) {
-      return await launchUrl(uri, mode: LaunchMode.externalApplication);
+    try {
+      if (await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+        return true;
+      }
+      return await launchUrl(uri, mode: LaunchMode.platformDefault);
+    } catch (_) {
+      try {
+        return await launchUrl(uri);
+      } catch (_) {
+        return false;
+      }
     }
-    return false;
   }
 
   /// Open release page in external browser (fallback)
   static Future<bool> openReleaseWebpage(String url) async {
+    if (url.isEmpty) return false;
     final Uri uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
-      return await launchUrl(uri, mode: LaunchMode.externalApplication);
+    try {
+      if (await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+        return true;
+      }
+      return await launchUrl(uri, mode: LaunchMode.platformDefault);
+    } catch (_) {
+      try {
+        return await launchUrl(uri);
+      } catch (_) {
+        return false;
+      }
     }
-    return false;
   }
 }
