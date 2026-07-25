@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:share_plus/share_plus.dart';
 import '../services/update_service.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -210,6 +211,42 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     )
                   : const Icon(Icons.arrow_forward_ios_rounded, size: 16),
               onTap: _isCheckingUpdate ? null : _handleCheckForUpdates,
+            ),
+          ),
+
+          const SizedBox(height: 12),
+
+          Card(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            elevation: 0,
+            color: theme.colorScheme.secondaryContainer.withOpacity(0.3),
+            child: ListTile(
+              contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+              leading: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.secondaryContainer,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  Icons.share_rounded,
+                  color: theme.colorScheme.secondary,
+                ),
+              ),
+              title: const Text(
+                'Share App APK',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              subtitle: const Text('Share universal download link with others'),
+              trailing: const Icon(Icons.send_rounded, size: 20, color: Colors.indigoAccent),
+              onTap: () {
+                Share.share(
+                  '📚 Download the official LibraVault Library Management Mobile App (Android APK):\n\n👉 https://github.com/smithmichaelandrew362007-sys/library/releases/latest/download/app-release.apk',
+                  subject: 'LibraVault Mobile App Download Link',
+                );
+              },
             ),
           ),
 
